@@ -35,7 +35,7 @@ class Card extends React.Component {
     });
 
     return (
-    <span ncssval={this.props.ncss} className={className} onClick={this.props.selectCard.bind(this, this.props.ncss)}>Card {this.props.ncss} </span>
+    <span className={className} onClick={this.props.selectCard.bind(this, this.props.ncss)}>Card {this.props.ncss} </span>
     );
   }
 }
@@ -44,14 +44,13 @@ class Table extends React.Component {
   
 
   render() {
-    
+    let onTable = [];
+    for(let i=0; i<12; i++){
+      onTable.push(<Card key={this.props.cards[i]} ncss={this.props.cards[i]} selectCard={this.props.selectCard} selectedCards={this.props.selectedCards}/>)
+    }
     return(
       <div>
-        <Card ncss='1213' selectCard={this.props.selectCard} selectedCards={this.props.selectedCards}/>
-        <Card ncss='1413' selectCard={this.props.selectCard} selectedCards={this.props.selectedCards}/>
-        <Card ncss='1113' selectCard={this.props.selectCard} selectedCards={this.props.selectedCards}/>
-        <Card ncss='1613' selectCard={this.props.selectCard} selectedCards={this.props.selectedCards}/>
-      
+        {onTable}
       </div>
     );
   }
@@ -59,27 +58,31 @@ class Table extends React.Component {
 
 class SetGame extends React.Component {
 
-  /* state: success, reload
-   functions: validate, generate deck, shuffle, pick
+  /* state: success, reload, set is set, button there is no set, 
+   functions: validate, generate deck, shuffle, pick, chcek if set
    OOP, rozszerzalne zasady, hard-coded constraints: selectCard:3  */
 
   constructor(props){
     super(props);
+    this.noP = 3;
     this.state = {
       rules: false,
+      success: false,
       selectedCards: [],
+      cards: this.fisherYatesShuffle(this.generateDeck())
     };
+    
     this.toggleRules = this.toggleRules.bind(this);
     this.selectCard = this.selectCard.bind(this);
-    this.cards = this.fisherYatesShuffle(this.generateDeck());
+    
   }
 
   generateDeck() {
     /* ncss - number, color, shape, shading 
      noP - number of properties */
     
-    const noP = 3;
     const deck = [];
+    const noP = this.noP;
     for (let n = 0; n < noP; n++){
       for (let c = 0; c < noP; c++){
         for (let s1 = 0; s1 < noP; s1++){
@@ -119,6 +122,29 @@ class SetGame extends React.Component {
     this.setState({
       selectCards: selectedCards
     });
+
+    if (selectedCards.length===this.noP){
+      if(this.isValid(this.state.selectedCards)){
+        alert('hurray!');
+      }
+      else{
+        alert('Not a valid set, knucklehead...')
+      }
+      this.setState({selectedCards: []});
+    }
+  }
+
+  isValid(set) {
+    for(let i = 0; i <= this.noP; i++) {
+      const valSet = new Set();
+      for (const card of set){
+        valSet.add(card[i]);
+      }
+      if(valSet.length!==1 && valSet.length!==this.noP){
+        return false;
+      } 
+    }
+    return true;
   }
 
   toggleRules() {
@@ -130,9 +156,7 @@ class SetGame extends React.Component {
       <div>
        <h1><span>Set Game</span></h1>
        <Rules rules={this.state.rules} toggleRules={this.toggleRules} />
-       <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards}/>
-       <span>{this.state.selectedCards}</span>
-
+       <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards}/>
       </div>
     );
   }
