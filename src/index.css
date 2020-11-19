@@ -11,3 +11,28 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.hidden {
+  display:none;
+}
+
+h1 {
+ text-align: center;
+}
+
+#root {
+  width: 420px;
+  margin: 30px auto 0;
+}
+
+.card {
+  font-size:1.2rem;
+  margin: 5px 5px 5px 5px;
+}
+
+.card:hover {
+  font-size:1.4rem;
+}
+.selected {
+  font-weight: bold;
+}
