@@ -45,8 +45,15 @@ class Table extends React.Component {
 
   render() {
     let onTable = [];
-    for(let i=0; i<12; i++){
-      onTable.push(<Card key={this.props.cards[i]} ncss={this.props.cards[i]} selectCard={this.props.selectCard} selectedCards={this.props.selectedCards}/>)
+
+    /*
+    onTable.push(<Card key='1111' ncss='1111' selectCard={this.props.selectCard} selectedCards={this.props.selectedCards}/>)
+    onTable.push(<Card key='1112' ncss='1112' selectCard={this.props.selectCard} selectedCards={this.props.selectedCards}/>)
+    onTable.push(<Card key='1113' ncss='1113' selectCard={this.props.selectCard} selectedCards={this.props.selectedCards}/>)
+    */
+    
+    for(const card of this.props.cards){
+      onTable.push(<Card key={card} ncss={card} selectCard={this.props.selectCard} selectedCards={this.props.selectedCards}/>)
     }
     return(
       <div>
@@ -65,11 +72,13 @@ class SetGame extends React.Component {
   constructor(props){
     super(props);
     this.noP = 3;
+    const deck = this.fisherYatesShuffle(this.generateDeck());
     this.state = {
       rules: false,
       success: false,
       selectedCards: [],
-      cards: this.fisherYatesShuffle(this.generateDeck())
+      cards: deck.slice(0, this.noP * 4),
+      remainingCards: deck.slice (this.noP * 4)  
     };
     
     this.toggleRules = this.toggleRules.bind(this);
@@ -109,7 +118,21 @@ class SetGame extends React.Component {
       return arr;
   }
 
+  checkForSets() {
+    const cards = this.state.cards;
+    const combinations = [];
+    for (let i1 = 0; i1 < cards.length; i1++){
+      for (let i2 = i1 + 1; i2 < cards.length; i2++){
+        for (let i3 = i2 + 1; i3 < cards.length; i3++){
+            combinations.push([cards[i1], cards[i2], cards[i3]]);
+        }
+      }
+    }
+    console.log(combinations);
+  }
+
   selectCard(ncss) {
+
     let selectedCards = this.state.selectedCards;
     if (selectedCards.indexOf(ncss) === -1){
       if (selectedCards.length < 3){
@@ -123,15 +146,33 @@ class SetGame extends React.Component {
       selectCards: selectedCards
     });
 
-    if (selectedCards.length===this.noP){
-      if(this.isValid(this.state.selectedCards)){
-        alert('hurray!');
-      }
-      else{
-        alert('Not a valid set, knucklehead...')
-      }
-      this.setState({selectedCards: []});
+    if (selectedCards.length === this.noP){
+      this.lastSelected()
     }
+  }
+
+  lastSelected() {
+
+    if(this.isValid(this.state.selectedCards)){
+      alert('hurray!');
+
+      const cards = this.state.cards;
+      const remainingCards = this.state.remainingCards;
+      let i = 0;
+      for(const card of this.state.selectedCards){
+        cards.splice(cards.indexOf(card), 1, remainingCards[i]);
+        i++;
+      }
+      this.setState({
+        cards: cards,
+        remainingCards: remainingCards.slice(this.noP)
+      });
+    }
+    else{
+      alert('Not a valid set, knucklehead...');
+      this.checkForSets();
+    }
+    this.setState({selectedCards: []});
   }
 
   isValid(set) {
@@ -140,16 +181,18 @@ class SetGame extends React.Component {
       for (const card of set){
         valSet.add(card[i]);
       }
-      if(valSet.length!==1 && valSet.length!==this.noP){
+      if(valSet.size !== 1 && valSet.size !== this.noP){
         return false;
       } 
     }
     return true;
   }
 
+
   toggleRules() {
     this.setState({rules: !this.state.rules});
   }
+
 
   render() {
     return(
@@ -157,6 +200,9 @@ class SetGame extends React.Component {
        <h1><span>Set Game</span></h1>
        <Rules rules={this.state.rules} toggleRules={this.toggleRules} />
        <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards}/>
+        <span>{this.state.cards.length}</span>
+        <br></br>
+        <span>{this.state.remainingCards.length}</span>
       </div>
     );
   }
