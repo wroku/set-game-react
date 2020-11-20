@@ -26,16 +26,43 @@ class Rules extends React.Component {
 }
 
 class Card extends React.Component {
+  
+  
 
   render() {
+
+    const number = this.props.ncss[0];
+    const colour = this.props.ncss[1];
+    const shape = this.props.ncss[2];
+    const shading = this.props.ncss[3];
     const isSelected = !(this.props.selectedCards.indexOf(this.props.ncss) === -1)
     const className = classNames({
       'card': true,
       'selected' : isSelected
     });
 
+    const xLink = "#myShape" + shape;
     return (
-    <span className={className} onClick={this.props.selectCard.bind(this, this.props.ncss)}>Card {this.props.ncss} </span>
+    <div className="cardiv">
+      <span className={className} onClick={this.props.selectCard.bind(this, this.props.ncss)}>Card {this.props.ncss} </span>
+      <svg viewBox="0 0 5 3">
+      <defs>
+        <circle id="myShape0" cx="0" cy="0" r="0.8" />
+        <rect id="myShape1" x='-0.5' y = '-0.5' width='1' height='1' rx='0.1' />
+        <circle id="myShape2" cx="0" cy="0" r="0.3" />
+
+        <linearGradient id="myGradient" gradientTransform="rotate(90)">
+          <stop offset="20%" stopColor="gold" />
+          <stop offset="90%" stopColor="red" />
+        </linearGradient>
+      </defs>
+ 
+  
+      <use x="2.5" y="1.5" xlinkHref={xLink} fill="url('#myGradient')" />
+
+      </svg>
+    </div>
+    
     );
   }
 }
@@ -120,15 +147,18 @@ class SetGame extends React.Component {
 
   checkForSets() {
     const cards = this.state.cards;
-    const combinations = [];
+    let setCounter = 0;
     for (let i1 = 0; i1 < cards.length; i1++){
       for (let i2 = i1 + 1; i2 < cards.length; i2++){
         for (let i3 = i2 + 1; i3 < cards.length; i3++){
-            combinations.push([cards[i1], cards[i2], cards[i3]]);
+          const possibleSet = [cards[i1], cards[i2], cards[i3]];
+          if (this.isValid(possibleSet)){  
+            setCounter ++;
+          }
         }
       }
     }
-    console.log(combinations);
+    return setCounter;
   }
 
   selectCard(ncss) {
@@ -170,7 +200,6 @@ class SetGame extends React.Component {
     }
     else{
       alert('Not a valid set, knucklehead...');
-      this.checkForSets();
     }
     this.setState({selectedCards: []});
   }
@@ -201,8 +230,10 @@ class SetGame extends React.Component {
        <Rules rules={this.state.rules} toggleRules={this.toggleRules} />
        <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards}/>
         <span>{this.state.cards.length}</span>
-        <br></br>
+        <br/>
         <span>{this.state.remainingCards.length}</span>
+        <br/>
+        <span>{this.checkForSets()}</span>
       </div>
     );
   }
