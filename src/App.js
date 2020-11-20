@@ -42,26 +42,60 @@ class Card extends React.Component {
     });
 
     const xLink = "#myShape" + shape;
+    const myGradient = "url('#myGradient" + colour + "')";
+    let usePhrase;
+    if(number==='0'){
+      usePhrase = <g>
+                    <use x="0" y="0" xlinkHref={xLink} fill={myGradient} />;
+                  </g>
+    }
+    else if(number==='1'){
+      usePhrase = <g>
+                    <use x="-30" y="0" xlinkHref={xLink} fill={myGradient} /> 
+                    <use x="+30" y="0" xlinkHref={xLink} fill={myGradient} />
+                  </g>
+          
+    }
+    else{
+      usePhrase = <g>
+                    <use x="-60" y="0" xlinkHref={xLink} fill={myGradient} /> 
+                    <use x="0" y="0" xlinkHref={xLink} fill={myGradient} />
+                    <use x="+60" y="0" xlinkHref={xLink} fill={myGradient} />
+                  </g>
+    }
+
     return (
-    <div className="cardiv">
-      <span className={className} onClick={this.props.selectCard.bind(this, this.props.ncss)}>Card {this.props.ncss} </span>
-      <svg viewBox="0 0 5 3">
-      <defs>
-        <circle id="myShape0" cx="0" cy="0" r="0.8" />
-        <rect id="myShape1" x='-0.5' y = '-0.5' width='1' height='1' rx='0.1' />
-        <circle id="myShape2" cx="0" cy="0" r="0.3" />
+      <div className={className} onClick={this.props.selectCard.bind(this, this.props.ncss)}>
+        <span className='cardspan' >Card {this.props.ncss} </span>
+        <svg viewBox="0 0 200 100">
+        <defs>
+          
+          <circle id="myShape0" cx="100" cy='50' r="27" />
+          <rect id="myShape1" x='75' y = '25' width='50' height='50' rx='5' />
+          <polygon id="myShape2" points='100,15 75,50 100,85 125,50' />
 
-        <linearGradient id="myGradient" gradientTransform="rotate(90)">
-          <stop offset="20%" stopColor="gold" />
-          <stop offset="90%" stopColor="red" />
-        </linearGradient>
-      </defs>
- 
+          <linearGradient id="myGradient0" gradientTransform="rotate(90)">
+            <stop offset="20%" stopColor="gold" />
+            <stop offset="90%" stopColor="red" />
+          </linearGradient>
+
+          <linearGradient id="myGradient1" gradientTransform="rotate(130)">
+            <stop offset="20%" stopColor="aquamarine" />
+            <stop offset="90%" stopColor="blueviolet" />
+          </linearGradient>
+
+          <linearGradient id="myGradient2" gradientTransform="rotate(90)">
+            <stop offset="20%" stopColor="darkgoldenrod" />
+            <stop offset="90%" stopColor="darkgreen" />
+          </linearGradient>
+
+        </defs>
   
-      <use x="2.5" y="1.5" xlinkHref={xLink} fill="url('#myGradient')" />
+    
+        {usePhrase}
 
-      </svg>
-    </div>
+        </svg>
+      </div>
     
     );
   }
