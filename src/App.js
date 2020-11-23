@@ -43,36 +43,68 @@ class Card extends React.Component {
 
     const xLink = "#myShape" + shape;
     const myGradient = "url('#myGradient" + colour + "')";
+    const colours = {'0': 'red',
+                     '1': 'green',
+                     '2': 'darkviolet'};
     let usePhrase;
+    let fill;
+    let stroke;
+
+    if(shading === '0'){
+      fill = 'none';
+      stroke = colours[colour];
+    }
+    else if(shading === '1'){
+      fill = "url('#diagonal-stripes" + colour + "')";
+      stroke = 'none';
+    }
+    else {
+      fill = colours[colour];
+      stroke = 'none';
+    }
+
     if(number==='0'){
       usePhrase = <g>
-                    <use x="0" y="0" xlinkHref={xLink} fill={myGradient} />;
+                    <use x="-10" y="0" xlinkHref={xLink} stroke={stroke} stroke-width='8' fill={fill} />;
                   </g>
     }
     else if(number==='1'){
       usePhrase = <g>
-                    <use x="-30" y="0" xlinkHref={xLink} fill={myGradient} /> 
-                    <use x="+30" y="0" xlinkHref={xLink} fill={myGradient} />
+                    <use x="-70" y="0" xlinkHref={xLink} stroke={stroke} stroke-width='8' fill={fill} /> 
+                    <use x="+50" y="0" xlinkHref={xLink} stroke={stroke} stroke-width='8' fill={fill} />
                   </g>
           
     }
     else{
       usePhrase = <g>
-                    <use x="-60" y="0" xlinkHref={xLink} fill={myGradient} /> 
-                    <use x="0" y="0" xlinkHref={xLink} fill={myGradient} />
-                    <use x="+60" y="0" xlinkHref={xLink} fill={myGradient} />
+                    <use x="-130" y="0" xlinkHref={xLink} stroke={stroke} stroke-width='8' fill={fill} /> 
+                    <use x="-10" y="0" xlinkHref={xLink} stroke={stroke} stroke-width='8' fill={fill} />
+                    <use x="+110" y="0" xlinkHref={xLink} stroke={stroke} stroke-width='8' fill={fill} />
                   </g>
     }
 
     return (
       <div className={className} onClick={this.props.selectCard.bind(this, this.props.ncss)}>
         <span className='cardspan' >Card {this.props.ncss} </span>
-        <svg viewBox="0 0 200 100">
+        <svg viewBox="0 0 400 200">
         <defs>
           
-          <circle id="myShape0" cx="100" cy='50' r="27" />
-          <rect id="myShape1" x='75' y = '25' width='50' height='50' rx='5' />
-          <polygon id="myShape2" points='100,15 75,50 100,85 125,50' />
+          <path id='myShape0' x='100' y='0' d="M181.081 36.920 C 166.924 44.221,165.015 53.585,173.750 72.878 C 179.514 85.609,180.380 91.380,178.029 101.377 C 169.073 139.460,175.236 158.729,200.000 170.063 C 231.747 184.594,257.710 163.195,238.714 138.154 C 227.051 122.780,226.573 120.104,231.907 100.000 C 238.278 75.985,235.948 59.675,224.514 48.240 C 212.912 36.639,192.130 31.222,181.081 36.920" />
+          <circle id="myShape4" cx="210" cy='100' r="27" />
+          <rect id="myShape1" x='160' y = '30' width='80' height='140' rx='44' />
+          <polygon id="myShape2" points='210,30 160,100 210,170 260,100' />
+
+          <pattern id='diagonal-stripes0' x='0' y='0' width ='8' height='8' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
+            <rect c='0' y='0' width='4' height='8' stroke='none' fill={colours['0']} />
+          </pattern>
+
+          <pattern id='diagonal-stripes1' x='0' y='0' width ='8' height='8' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
+            <rect c='0' y='0' width='4' height='8' stroke='none' fill={colours['1']} />
+          </pattern>
+
+          <pattern id='diagonal-stripes2' x='0' y='0' width ='8' height='8' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
+            <rect c='0' y='0' width='4' height='8' stroke='none' fill={colours['2']} />
+          </pattern>
 
           <linearGradient id="myGradient0" gradientTransform="rotate(90)">
             <stop offset="20%" stopColor="gold" />
@@ -91,7 +123,7 @@ class Card extends React.Component {
 
         </defs>
   
-    
+        
         {usePhrase}
 
         </svg>
