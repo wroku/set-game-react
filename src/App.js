@@ -85,13 +85,11 @@ class Card extends React.Component {
 
     return (
       <div className={className} onClick={this.props.selectCard.bind(this, this.props.ncss)}>
-        <span className='cardspan' >Card {this.props.ncss} </span>
-        <svg viewBox="0 0 400 200">
+        <span className='cardspan'>Card {this.props.ncss} </span>
+        <svg className='svg-shapes-box' viewBox="0 0 400 200">
         <defs>
           
-          <path id='myShape0' x='100' y='0' d="M181.081 36.920 C 166.924 44.221,165.015 53.585,173.750 72.878 C 179.514 85.609,180.380 91.380,178.029 101.377 C 169.073 139.460,175.236 158.729,200.000 170.063 C 231.747 184.594,257.710 163.195,238.714 138.154 C 227.051 122.780,226.573 120.104,231.907 100.000 C 238.278 75.985,235.948 59.675,224.514 48.240 C 212.912 36.639,192.130 31.222,181.081 36.920" />
-          <circle id="myShape4" cx="210" cy='100' r="27" />
-          <rect id="myShape1" x='160' y = '30' width='80' height='140' rx='44' />
+          <path id='myShape0' x='100' y='0' d="M181.081 36.920 C 166.924 44.221,165.015 53.585,173.750 72.878 C 179.514 85.609,180.380 91.380,178.029 101.377 C 169.073 139.460,175.236 158.729,200.000 170.063 C 231.747 184.594,257.710 163.195,238.714 138.154 C 227.051 122.780,226.573 120.104,231.907 100.000 C 238.278 75.985,235.948 59.675,224.514 48.240 C 212.912 36.639,192.130 31.222,181.081 36.920" />          <rect id="myShape1" x='160' y = '30' width='80' height='140' rx='44' />
           <polygon id="myShape2" points='210,30 160,100 210,170 260,100' />
 
           <pattern id='diagonal-stripes0' x='0' y='0' width ='8' height='8' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
@@ -149,6 +147,7 @@ class Table extends React.Component {
       onTable.push(<Card key={card} ncss={card} selectCard={this.props.selectCard} selectedCards={this.props.selectedCards}/>)
     }
     return(
+      
       <div>
         {onTable}
       </div>
@@ -176,6 +175,7 @@ class SetGame extends React.Component {
     
     this.toggleRules = this.toggleRules.bind(this);
     this.selectCard = this.selectCard.bind(this);
+    this.checkIfSetOnTable = this.checkIfSetOnTable.bind(this);
     
   }
 
@@ -211,7 +211,7 @@ class SetGame extends React.Component {
       return arr;
   }
 
-  checkForSets() {
+  countSets() {
     const cards = this.state.cards;
     let setCounter = 0;
     for (let i1 = 0; i1 < cards.length; i1++){
@@ -251,18 +251,28 @@ class SetGame extends React.Component {
 
     if(this.isValid(this.state.selectedCards)){
       alert('hurray!');
-
       const cards = this.state.cards;
       const remainingCards = this.state.remainingCards;
-      let i = 0;
-      for(const card of this.state.selectedCards){
-        cards.splice(cards.indexOf(card), 1, remainingCards[i]);
-        i++;
+
+      if (cards.length > 12) {
+        for(const card of this.state.selectedCards){
+          cards.splice(cards.indexOf(card), 1);
+        }
+        this.setState({
+          cards: cards
+        });
       }
-      this.setState({
-        cards: cards,
-        remainingCards: remainingCards.slice(this.noP)
-      });
+      else {
+        let i = 0;
+        for(const card of this.state.selectedCards){
+          cards.splice(cards.indexOf(card), 1, remainingCards[i]);
+          i++;
+        }
+        this.setState({
+          cards: cards,
+          remainingCards: remainingCards.slice(this.noP)
+        });
+      }
     }
     else{
       alert('Not a valid set, knucklehead...');
@@ -288,18 +298,35 @@ class SetGame extends React.Component {
     this.setState({rules: !this.state.rules});
   }
 
+  checkIfSetOnTable() {
+    if (this.countSets() > 0) {
+      const msg = this.countSets() === 1 ? 'There is exactly one set on the table.' : `There are ${this.countSets()} sets on the table.`; 
+      alert(msg)
+    }
+    else {
+      const cards = this.state.cards;
+      const remainingCards = this.state.remainingCards;
+      cards.push(...remainingCards.slice(0, this.noP));
+      this.setState({
+        cards: cards,
+        remainingCards: remainingCards.slice(this.noP)
+      });
+    }
+  }
+
 
   render() {
     return(
       <div>
        <h1><span>Set Game</span></h1>
        <Rules rules={this.state.rules} toggleRules={this.toggleRules} />
+       <button onClick={this.checkIfSetOnTable}>There is no SET!</button>
        <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards}/>
         <span>{this.state.cards.length}</span>
         <br/>
         <span>{this.state.remainingCards.length}</span>
         <br/>
-        <span>{this.checkForSets()}</span>
+        <span>{this.countSets()}</span>
       </div>
     );
   }

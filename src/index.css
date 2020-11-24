@@ -27,8 +27,11 @@ h1 {
 
 .card{
   width: 30%;
-  height: auto;
+  height: 8rem;
   display: inline-block;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
   margin: 5px 5px 5px 5px;
   border-style: solid;
   border-width: 2px;
@@ -48,4 +51,8 @@ h1 {
 .selected {
   font-weight: bold;
   border-width: 4px;
+}
+
+.svg-shapes-box {
+  margin-top:1rem;
 }
