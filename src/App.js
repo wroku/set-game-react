@@ -17,7 +17,15 @@ class Rules extends React.Component {
       <div className='rules'>
         <span className='rules-toggle' onClick={this.props.toggleRules}>{rulesActionText}</span>
         <p className={className}>
-          Below are displayed 12 cards in 3 rows. Each contains 1-3 symbols with distinct properities such as shape, color and shading. There are 3 diffrent possibilities for each property. To win a round you have to select three cards containing symbols forming a SET. Meaning, they all have the same or have three different, numbers, shapes, colors and shadings. Conditions can be mixed, eg. three cards with exactly one symbol in red colour, but with diffrent shadings and shapes. 
+        Try to find and select cards forming a set.
+        A set consists of three cards satisfying <b>all</b> of these conditions:
+        <ul>
+          <li>They all have the same number or have three different numbers.</li>
+          <li>They all have the same shape or have three different shapes.</li>
+          <li>They all have the same shading or have three different shadings.</li>
+          <li>They all have the same color or have three different colors.</li>
+        </ul>
+        If you think that there is no set on the table you can ask for 3 additional cards. 
         </p>
       </div>
     );
@@ -65,27 +73,27 @@ class Card extends React.Component {
 
     if(number==='0'){
       usePhrase = <g>
-                    <use x="-10" y="0" xlinkHref={xLink} stroke={stroke} stroke-width='8' fill={fill} />;
+                    <use x="-10" y="0" xlinkHref={xLink} stroke={stroke} strokeWidth='8' fill={fill} />;
                   </g>
     }
     else if(number==='1'){
       usePhrase = <g>
-                    <use x="-70" y="0" xlinkHref={xLink} stroke={stroke} stroke-width='8' fill={fill} /> 
-                    <use x="+50" y="0" xlinkHref={xLink} stroke={stroke} stroke-width='8' fill={fill} />
+                    <use x="-70" y="0" xlinkHref={xLink} stroke={stroke} strokeWidth='8' fill={fill} /> 
+                    <use x="+50" y="0" xlinkHref={xLink} stroke={stroke} strokeWidth='8' fill={fill} />
                   </g>
           
     }
     else{
       usePhrase = <g>
-                    <use x="-130" y="0" xlinkHref={xLink} stroke={stroke} stroke-width='8' fill={fill} /> 
-                    <use x="-10" y="0" xlinkHref={xLink} stroke={stroke} stroke-width='8' fill={fill} />
-                    <use x="+110" y="0" xlinkHref={xLink} stroke={stroke} stroke-width='8' fill={fill} />
+                    <use x="-130" y="0" xlinkHref={xLink} stroke={stroke} strokeWidth='8' fill={fill} /> 
+                    <use x="-10" y="0" xlinkHref={xLink} stroke={stroke} strokeWidth='8' fill={fill} />
+                    <use x="+110" y="0" xlinkHref={xLink} stroke={stroke} strokeWidth='8' fill={fill} />
                   </g>
     }
 
     return (
       <div className={className} onClick={this.props.selectCard.bind(this, this.props.ncss)}>
-        <span className='cardspan'>Card {this.props.ncss} </span>
+        <span className='cardspan'>Card {this.props.ncss}</span>
         <svg className='svg-shapes-box' viewBox="0 0 400 200">
         <defs>
           
@@ -148,7 +156,7 @@ class Table extends React.Component {
     }
     return(
       
-      <div>
+      <div class='table-wrapper'>
         {onTable}
       </div>
     );
@@ -157,17 +165,20 @@ class Table extends React.Component {
 
 class SetGame extends React.Component {
 
-  /* state: success, reload, set is set, button there is no set, 
-   functions: validate, generate deck, shuffle, pick, chcek if set
+  /*state: success, reload, set is set, showTimer, hideTimer
+    implement unlikely event of finishing deck.
    OOP, rozszerzalne zasady, hard-coded constraints: selectCard:3  */
 
   constructor(props){
     super(props);
     this.noP = 3;
+    this.penalty = 10;
     const deck = this.fisherYatesShuffle(this.generateDeck());
     this.state = {
       rules: false,
-      success: false,
+      startTime: new Date(),
+      successTimes: [],
+      fails: [0],
       selectedCards: [],
       cards: deck.slice(0, this.noP * 4),
       remainingCards: deck.slice (this.noP * 4)  
@@ -176,7 +187,6 @@ class SetGame extends React.Component {
     this.toggleRules = this.toggleRules.bind(this);
     this.selectCard = this.selectCard.bind(this);
     this.checkIfSetOnTable = this.checkIfSetOnTable.bind(this);
-    
   }
 
   generateDeck() {
@@ -201,14 +211,14 @@ class SetGame extends React.Component {
   fisherYatesShuffle(arr){
     /*modern version of Fisher-Yates shuffle algorithm*/
     
-      let j, x, i;
-      for(i = arr.length -1; i > 0; i--){
-        j = Math.floor(Math.random() * (i+1));
-        x = arr[i];
-        arr[i] = arr[j];
-        arr[j] = x;
-      }
-      return arr;
+    let j, x, i;
+    for(i = arr.length -1; i > 0; i--){
+      j = Math.floor(Math.random() * (i + 1));
+      x = arr[i];
+      arr[i] = arr[j];
+      arr[j] = x;
+    }
+    return arr;
   }
 
   countSets() {
@@ -228,7 +238,6 @@ class SetGame extends React.Component {
   }
 
   selectCard(ncss) {
-
     let selectedCards = this.state.selectedCards;
     if (selectedCards.indexOf(ncss) === -1){
       if (selectedCards.length < 3){
@@ -236,7 +245,7 @@ class SetGame extends React.Component {
       }
     }
     else {
-      selectedCards.pop(ncss);
+      selectedCards.splice(selectedCards.indexOf(ncss), 1);
     }
     this.setState({
       selectCards: selectedCards
@@ -248,9 +257,9 @@ class SetGame extends React.Component {
   }
 
   lastSelected() {
-
     if(this.isValid(this.state.selectedCards)){
-      alert('hurray!');
+      this.calculateElapsed()
+      alert(`hurray! Your time: ${this.state.successTimes[this.state.successTimes.length -1 ]}`);
       const cards = this.state.cards;
       const remainingCards = this.state.remainingCards;
 
@@ -258,8 +267,11 @@ class SetGame extends React.Component {
         for(const card of this.state.selectedCards){
           cards.splice(cards.indexOf(card), 1);
         }
+        const fails = this.state.fails;
+        fails.push(0);
         this.setState({
-          cards: cards
+          cards: cards,
+          fails: fails
         });
       }
       else {
@@ -268,14 +280,22 @@ class SetGame extends React.Component {
           cards.splice(cards.indexOf(card), 1, remainingCards[i]);
           i++;
         }
+        const fails = this.state.fails;
+        fails.push(0);
         this.setState({
           cards: cards,
-          remainingCards: remainingCards.slice(this.noP)
+          remainingCards: remainingCards.slice(this.noP),
+          fails: fails
         });
       }
     }
     else{
       alert('Not a valid set, knucklehead...');
+      const fails = this.state.fails;
+      fails.splice(-1, 1, fails[fails.length - 1] + 1);
+      this.setState({
+        fails: fails
+      });
     }
     this.setState({selectedCards: []});
   }
@@ -293,13 +313,17 @@ class SetGame extends React.Component {
     return true;
   }
 
-
   toggleRules() {
     this.setState({rules: !this.state.rules});
   }
 
   checkIfSetOnTable() {
     if (this.countSets() > 0) {
+      const fails = this.state.fails;
+      fails.splice(-1, 1, fails[fails.length - 1] + 1);
+      this.setState({
+        fails: fails
+      });
       const msg = this.countSets() === 1 ? 'There is exactly one set on the table.' : `There are ${this.countSets()} sets on the table.`; 
       alert(msg)
     }
@@ -314,19 +338,38 @@ class SetGame extends React.Component {
     }
   }
 
+  calculateElapsed (){
+    const stop = new Date();
+    const successTimes = this.state.successTimes;
+    const elapsed = (stop.getTime() - this.state.startTime.getTime())/1000;
+    successTimes.push(Math.round(elapsed * 10)/10);
+    this.setState ({
+      successTimes: successTimes,
+      startTime: new Date()
+    });
+  }
 
   render() {
     return(
       <div>
        <h1><span>Set Game</span></h1>
        <Rules rules={this.state.rules} toggleRules={this.toggleRules} />
-       <button onClick={this.checkIfSetOnTable}>There is no SET!</button>
+       <div className='button-wrapper'>
+         <button className='noSet-button' onClick={this.checkIfSetOnTable}>There is no SET!</button>
+       </div>
+       
        <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards}/>
-        <span>{this.state.cards.length}</span>
-        <br/>
-        <span>{this.state.remainingCards.length}</span>
-        <br/>
-        <span>{this.countSets()}</span>
+        <div className='debugInfo'>
+          <span>{this.state.cards.length}</span>
+          <br/>
+          <span>{this.state.remainingCards.length}</span>
+          <br/>
+          <span>{this.countSets()}</span>
+          <br/>
+          <span>{this.state.fails}</span>
+          <br/>
+          <span>{this.state.successTimes}</span>
+        </div>
       </div>
     );
   }

@@ -56,3 +56,16 @@ h1 {
 .svg-shapes-box {
   margin-top:1rem;
 }
+.noSet-button {
+  margin: 0 auto;
+}
+.button-wrapper, .table-wrapper {
+  text-align: center;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+.rules{
+  margin-left: 1.5rem;
+  margin-right: 1.5rem;
+  
+}
