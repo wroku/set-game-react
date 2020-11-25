@@ -241,6 +241,7 @@ class SetGame extends React.Component {
       startTime: new Date(),
       successTimes: [],
       fails: [0],
+      titleData: this.generateValid(),
       selectedCards: [],
       cards: deck.slice(0, this.noP * 4),
       remainingCards: deck.slice (this.noP * 4)  
@@ -326,7 +327,7 @@ class SetGame extends React.Component {
       alert(`hurray! Your time: ${this.state.successTimes[this.state.successTimes.length -1 ]}`);
       const cards = this.state.cards;
       const remainingCards = this.state.remainingCards;
-
+      
       if (cards.length > 12) {
         for(const card of this.state.selectedCards){
           cards.splice(cards.indexOf(card), 1);
@@ -352,6 +353,7 @@ class SetGame extends React.Component {
           fails: fails
         });
       }
+      this.generateTitle();
     }
     else{
       alert('Not a valid set, knucklehead...');
@@ -460,10 +462,23 @@ class SetGame extends React.Component {
     return ncData;
   }
 
+  generateTitle(){
+    if (this.countSets(this.state.cards) === 0){
+      this.setState({
+        titleData: this.generateInvalid()
+      });
+    }
+    else {
+      this.setState({
+        titleData: this.generateValid()
+      });
+    }
+  }
+
   render() {
     return(
       <div>
-       <Title colours={this.colours} ncData={this.generateValid()}/>
+       <Title colours={this.colours} ncData={this.state.titleData}/>
        <Rules rules={this.state.rules} toggleRules={this.toggleRules} />
 
        <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards} colours={this.colours}/>

@@ -67,5 +67,7 @@ h1 {
 .rules{
   margin-left: 1.5rem;
   margin-right: 1.5rem;
-  
+}
+.rules:hover{
+  font-weight: bold;
 }
