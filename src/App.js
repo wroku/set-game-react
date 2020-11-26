@@ -23,7 +23,10 @@ class Rules extends React.Component {
           <li>They all have the same shading or have three different shadings.</li>
           <li>They all have the same color or have three different colors.</li>
         </ul>
-        If you think that there is no set on the table you can ask for 3 additional cards. 
+        For example, letters S, E and T have diffrent shapes and each of these occurs only once in the title above.
+        Their colours and shadings also satisfies our conditions. At least on the first deal, later - it depends...
+        What brings us to the last matter - if you think that there is no set on the table you can ask for 3 additional cards using red button.
+        More info on <a href='https://en.wikipedia.org/wiki/Set_(card_game)'>Wikipedia</a>. 
         </p>
       </div>
     );
@@ -37,17 +40,40 @@ class Stats extends React.Component {
       'details': true,
       'hidden': !this.props.stats
     });
-
+    const failedAttempts = this.props.fails.reduce((x,y) => x + y);
+    const score = this.props.successTimes.length * 3 - failedAttempts;
+    const lastTime = this.props.successTimes.length >= 1? this.props.successTimes[this.props.successTimes.length - 1] : '-';
+    const bestTime = this.props.successTimes.length >= 1? Math.min(...this.props.successTimes) : '-';
+    const avgTime = this.props.successTimes.length >= 1? this.props.successTimes.reduce((x, y) => x + y) / this.props.successTimes.length : '-';
     return(
       <div className='stats'>
         <p className={className}>
-          Here we will display:
-          Score,
-          Last time, 
-          Best time,
-          Avg time
-          Failed attempts
-          remaining cards
+          <div className='row'>
+            <div className='column first'>
+              <p>Score: </p>
+              <p>Remaining cards: </p>
+              <p>Failed attempts: </p>
+            </div>
+            <div className='column'>
+              <p>{score}</p>
+              <p>{this.props.remainingCards.length}</p>
+              <p>{failedAttempts}</p>
+            </div>
+            <div className='column'>
+              <p>Last time:</p>
+              <p>Best time:</p>
+              <p>Average time:</p>
+            </div>
+            <div className='column'>
+              <p>{lastTime}</p>
+              <p>{bestTime}</p>
+              <p>{avgTime}</p>
+            </div>
+          </div>
+        
+        
+       
+         
         </p>
       </div>
     );
@@ -238,8 +264,8 @@ class Table extends React.Component {
 
 class SetGame extends React.Component {
 
-  /*state: success, reload,  showTimer, hideTimer
-   OOP, rozszerzalne zasady, hard-coded constraints: selectCard:3  */
+  /*state: success, reload, hint, footer, responsivnes, score&time animations  showTimer, hideTimer
+  */
 
   constructor(props){
     super(props);
@@ -266,6 +292,23 @@ class SetGame extends React.Component {
     this.selectCard = this.selectCard.bind(this);
     this.checkIfSetOnTable = this.checkIfSetOnTable.bind(this);
     this.removeCards = this.removeCards.bind(this);
+    this.reload = this.reload.bind(this);
+  }
+
+  reload(){
+    const deck = this.fisherYatesShuffle(this.generateDeck());
+    this.setState({
+      rules: false,
+      stats: false,
+      finished: false,
+      startTime: new Date(),
+      successTimes: [],
+      fails: [0],
+      titleData: this.generateValid(),
+      selectedCards: [],
+      cards: deck.slice(0, this.noP * 4),
+      remainingCards: deck.slice (this.noP * 4)  
+    });
   }
 
   generateDeck() {
@@ -539,6 +582,8 @@ class SetGame extends React.Component {
          <button className={!this.state.rules? 'toggle-rules button' : 'toggle-rules-selected button'} onClick={this.toggleRules}>{!this.state.rules? 'Show rules' : 'Hide rules'}</button>
          <button className='noSet button' onClick={this.checkIfSetOnTable}>There is no SET!</button>
          <button className={!this.state.stats? 'toggle-stats button' : 'toggle-stats-selected button'} onClick={this.toggleStats}>{!this.state.stats? 'Show stats' : 'Hide stats'}</button>
+         <button className='reload button' onClick={this.reload}>Reload</button>
+
        </div>
        <Rules rules={this.state.rules}/>
        <Stats stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
@@ -547,10 +592,6 @@ class SetGame extends React.Component {
         
         <div className='debugInfo'>
           <button className='delete-cards-btn' onClick={this.removeCards}>Remove remaining cards.</button>
-          <span>{this.state.cards.length}</span>
-          <br/>
-          <span>{this.state.remainingCards.length}</span>
-          <br/>
           <span>{this.countSets()}</span>
           <br/>
           <span>{this.state.fails}</span>
