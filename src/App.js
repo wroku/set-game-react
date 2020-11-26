@@ -28,7 +28,30 @@ class Rules extends React.Component {
       </div>
     );
   }
+}
 
+class Stats extends React.Component {
+
+  render(){
+    const className = classNames({
+      'details': true,
+      'hidden': !this.props.stats
+    });
+
+    return(
+      <div className='stats'>
+        <p className={className}>
+          Here we will display:
+          Score,
+          Last time, 
+          Best time,
+          Avg time
+          Failed attempts
+          remaining cards
+        </p>
+      </div>
+    );
+  }
 }
 
 class Title extends React.Component {
@@ -225,6 +248,7 @@ class SetGame extends React.Component {
     const deck = this.fisherYatesShuffle(this.generateDeck());
     this.state = {
       rules: false,
+      stats: false,
       finished: false,
       startTime: new Date(),
       successTimes: [],
@@ -238,6 +262,7 @@ class SetGame extends React.Component {
                     '1': 'green',
                     '2': 'darkviolet'};
     this.toggleRules = this.toggleRules.bind(this);
+    this.toggleStats = this.toggleStats.bind(this);
     this.selectCard = this.selectCard.bind(this);
     this.checkIfSetOnTable = this.checkIfSetOnTable.bind(this);
     this.removeCards = this.removeCards.bind(this);
@@ -393,7 +418,17 @@ class SetGame extends React.Component {
   }
 
   toggleRules() {
-    this.setState({rules: !this.state.rules});
+    this.setState({
+      rules: !this.state.rules,
+      stats: false
+    });
+  }
+
+  toggleStats() {
+    this.setState({
+      stats: !this.state.stats,
+      rules:false
+    });
   }
 
   checkIfSetOnTable() {
@@ -501,11 +536,12 @@ class SetGame extends React.Component {
       <div>
        <Title colours={this.colours} ncData={this.state.titleData}/>
        <div className='button-wrapper'>
-         <button className='toggle-rules button' onClick={this.toggleRules}>{!this.state.rules? 'Show rules' : 'Hide rules'}</button>
+         <button className={!this.state.rules? 'toggle-rules button' : 'toggle-rules-selected button'} onClick={this.toggleRules}>{!this.state.rules? 'Show rules' : 'Hide rules'}</button>
          <button className='noSet button' onClick={this.checkIfSetOnTable}>There is no SET!</button>
-         <button className='toggle-stats button' onClick={this.toggleStats}>Show stats.</button>
+         <button className={!this.state.stats? 'toggle-stats button' : 'toggle-stats-selected button'} onClick={this.toggleStats}>{!this.state.stats? 'Show stats' : 'Hide stats'}</button>
        </div>
        <Rules rules={this.state.rules}/>
+       <Stats stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
        <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards} colours={this.colours}/>
        
         
