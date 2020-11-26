@@ -11,11 +11,9 @@ class Rules extends React.Component {
       'info': true,
       'hidden': !this.props.rules
     });
-    const rulesActionText = !this.props.rules? 'Show rules' : 'Hide rules' ;
 
     return(
       <div className='rules'>
-        <span className='rules-toggle' onClick={this.props.toggleRules}>{rulesActionText}</span>
         <p className={className}>
         Try to find and select cards forming a set.
         A set consists of three cards satisfying <b>all</b> of these conditions:
@@ -32,10 +30,6 @@ class Rules extends React.Component {
   }
 
 }
-
-/*<use x="-3680" y="3490" xlinkHref='#letter0' stroke='black' strokeWidth='8' fill='none' />;
-  <use x="-2370" y="2140" xlinkHref='#letter1' stroke='black' strokeWidth='8' fill='none' />;
-  <use x="-2950" y="3490" xlinkHref='#letter2' stroke='black' strokeWidth='8' fill='none' />;*/
 
 class Title extends React.Component {
   
@@ -207,12 +201,6 @@ class Table extends React.Component {
   render() {
     let onTable = [];
 
-    /*
-    onTable.push(<Card key='1111' ncss='1111' selectCard={this.props.selectCard} selectedCards={this.props.selectedCards}/>)
-    onTable.push(<Card key='1112' ncss='1112' selectCard={this.props.selectCard} selectedCards={this.props.selectedCards}/>)
-    onTable.push(<Card key='1113' ncss='1113' selectCard={this.props.selectCard} selectedCards={this.props.selectedCards}/>)
-    */
-    
     for(const card of this.props.cards){
       onTable.push(<Card key={card} ncss={card} selectCard={this.props.selectCard} selectedCards={this.props.selectedCards} colours={this.props.colours}/>)
     }
@@ -227,8 +215,7 @@ class Table extends React.Component {
 
 class SetGame extends React.Component {
 
-  /*state: success, reload, set is set, showTimer, hideTimer
-    implement unlikely event of finishing deck.
+  /*state: success, reload,  showTimer, hideTimer
    OOP, rozszerzalne zasady, hard-coded constraints: selectCard:3  */
 
   constructor(props){
@@ -238,6 +225,7 @@ class SetGame extends React.Component {
     const deck = this.fisherYatesShuffle(this.generateDeck());
     this.state = {
       rules: false,
+      finished: false,
       startTime: new Date(),
       successTimes: [],
       fails: [0],
@@ -252,6 +240,7 @@ class SetGame extends React.Component {
     this.toggleRules = this.toggleRules.bind(this);
     this.selectCard = this.selectCard.bind(this);
     this.checkIfSetOnTable = this.checkIfSetOnTable.bind(this);
+    this.removeCards = this.removeCards.bind(this);
   }
 
   generateDeck() {
@@ -327,33 +316,57 @@ class SetGame extends React.Component {
       alert(`hurray! Your time: ${this.state.successTimes[this.state.successTimes.length -1 ]}`);
       const cards = this.state.cards;
       const remainingCards = this.state.remainingCards;
-      
-      if (cards.length > 12) {
+
+      /* Usual game */
+      if (remainingCards.length > 0){
+        if (cards.length > 12) {
+          for(const card of this.state.selectedCards){
+            cards.splice(cards.indexOf(card), 1);
+          }
+          const fails = this.state.fails;
+          fails.push(0);
+          this.setState({
+            cards: cards,
+            fails: fails
+          });
+        }
+        else {
+          let i = 0;
+          for(const card of this.state.selectedCards){
+            cards.splice(cards.indexOf(card), 1, remainingCards[i]);
+            i++;
+          }
+          const fails = this.state.fails;
+          fails.push(0);
+          this.setState({
+            cards: cards,
+            remainingCards: remainingCards.slice(this.noP),
+            fails: fails
+          });
+        }
+        this.generateTitle();
+      }
+      /* Near finish part */
+      else {
         for(const card of this.state.selectedCards){
           cards.splice(cards.indexOf(card), 1);
         }
-        const fails = this.state.fails;
-        fails.push(0);
         this.setState({
-          cards: cards,
-          fails: fails
+          cards: cards
         });
-      }
-      else {
-        let i = 0;
-        for(const card of this.state.selectedCards){
-          cards.splice(cards.indexOf(card), 1, remainingCards[i]);
-          i++;
+        if (this.countSets() > 0){
+          const fails = this.state.fails;
+          fails.push(0);
+          this.setState({
+            fails: fails
+          });
         }
-        const fails = this.state.fails;
-        fails.push(0);
-        this.setState({
-          cards: cards,
-          remainingCards: remainingCards.slice(this.noP),
-          fails: fails
-        });
+        else {
+          this.setState({
+            finished: true
+          });
+        }
       }
-      this.generateTitle();
     }
     else{
       alert('Not a valid set, knucklehead...');
@@ -475,18 +488,29 @@ class SetGame extends React.Component {
     }
   }
 
+  /*debug functions*/
+
+  removeCards(){
+    this.setState({
+      remainingCards: []
+    });
+  }
+
   render() {
     return(
       <div>
        <Title colours={this.colours} ncData={this.state.titleData}/>
-       <Rules rules={this.state.rules} toggleRules={this.toggleRules} />
-
-       <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards} colours={this.colours}/>
        <div className='button-wrapper'>
-         <button className='noSet-button' onClick={this.checkIfSetOnTable}>There is no SET!</button>
+         <button className='toggle-rules button' onClick={this.toggleRules}>{!this.state.rules? 'Show rules' : 'Hide rules'}</button>
+         <button className='noSet button' onClick={this.checkIfSetOnTable}>There is no SET!</button>
+         <button className='toggle-stats button' onClick={this.toggleStats}>Show stats.</button>
        </div>
+       <Rules rules={this.state.rules}/>
+       <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards} colours={this.colours}/>
+       
         
         <div className='debugInfo'>
+          <button className='delete-cards-btn' onClick={this.removeCards}>Remove remaining cards.</button>
           <span>{this.state.cards.length}</span>
           <br/>
           <span>{this.state.remainingCards.length}</span>

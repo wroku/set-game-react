@@ -5,6 +5,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: #F4F4F4;
 }
 
 code {
@@ -56,9 +57,7 @@ h1 {
 .svg-shapes-box {
   margin-top:1rem;
 }
-.noSet-button {
-  margin: 0 auto;
-}
+
 .button-wrapper, .table-wrapper {
   text-align: center;
   margin-top: 0.5rem;
@@ -68,6 +67,39 @@ h1 {
   margin-left: 1.5rem;
   margin-right: 1.5rem;
 }
-.rules:hover{
-  font-weight: bold;
+.title-wrapper{
+  margin-bottom:2rem;
 }
+.button{
+  margin: 0 1rem 0 1rem;
+  transition-duration: 0.4s;
+  font-size: 1.1rem;
+  padding: 8px 16px;
+  border-radius:4px;
+  background-color: white; 
+}
+.button:hover{
+  box-shadow: 0 10px 13px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+  color: white;
+}
+
+.toggle-rules{
+  border: 2px solid #4CAF50;
+}
+.toggle-rules:hover{
+  background-color: #4CAF50;
+}
+
+.toggle-stats{
+  border: 2px solid #7f20d8;
+}
+.toggle-stats:hover{
+  background-color: #7f20d8;
+}
+.noSet{
+  border: 2px solid #d82020;
+}
+.noSet:hover{
+  background-color: #d82020;
+}
+
