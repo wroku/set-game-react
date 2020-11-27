@@ -14,7 +14,7 @@ class Rules extends React.Component {
 
     return(
       <div className='rules'>
-        <p className={className}>
+        <div className={className}>
         Try to find and select cards forming a set.
         A set consists of three cards satisfying <b>all</b> of these conditions:
         <ul>
@@ -27,7 +27,7 @@ class Rules extends React.Component {
         Their colours and shadings also satisfies our conditions. At least on the first deal, later - it depends...
         What brings us to the last matter - if you think that there is no set on the table you can ask for 3 additional cards using red button.
         More info on <a href='https://en.wikipedia.org/wiki/Set_(card_game)'>Wikipedia</a>. 
-        </p>
+        </div>
       </div>
     );
   }
@@ -44,37 +44,33 @@ class Stats extends React.Component {
     const score = this.props.successTimes.length * 3 - failedAttempts;
     const lastTime = this.props.successTimes.length >= 1? this.props.successTimes[this.props.successTimes.length - 1] : '-';
     const bestTime = this.props.successTimes.length >= 1? Math.min(...this.props.successTimes) : '-';
-    const avgTime = this.props.successTimes.length >= 1? this.props.successTimes.reduce((x, y) => x + y) / this.props.successTimes.length : '-';
+    const avgTime = this.props.successTimes.length >= 1? Math.round((this.props.successTimes.reduce((x, y) => x + y) / this.props.successTimes.length)*10) / 10 : '-';
     return(
       <div className='stats'>
-        <p className={className}>
+        <div className={className}>
           <div className='row'>
             <div className='column first'>
               <p>Score: </p>
               <p>Remaining cards: </p>
               <p>Failed attempts: </p>
             </div>
-            <div className='column'>
+            <div className='column values1'>
               <p>{score}</p>
               <p>{this.props.remainingCards.length}</p>
               <p>{failedAttempts}</p>
             </div>
-            <div className='column'>
+            <div className='column second'>
               <p>Last time:</p>
               <p>Best time:</p>
               <p>Average time:</p>
             </div>
-            <div className='column'>
+            <div className='column values2'>
               <p>{lastTime}</p>
               <p>{bestTime}</p>
               <p>{avgTime}</p>
             </div>
           </div>
-        
-        
-       
-         
-        </p>
+        </div>
       </div>
     );
   }
@@ -151,9 +147,11 @@ class Card extends React.Component {
     const shape = this.props.ncss[2];
     const shading = this.props.ncss[3];
     const isSelected = !(this.props.selectedCards.indexOf(this.props.ncss) === -1)
+    const isHinted = !(this.props.hintedCards.indexOf(this.props.ncss) === -1)
     const className = classNames({
       'card': true,
-      'selected' : isSelected
+      'selected' : isSelected,
+      'hinted': isHinted
     });
 
     const xLink = "#myShape" + shape;
@@ -251,7 +249,7 @@ class Table extends React.Component {
     let onTable = [];
 
     for(const card of this.props.cards){
-      onTable.push(<Card key={card} ncss={card} selectCard={this.props.selectCard} selectedCards={this.props.selectedCards} colours={this.props.colours}/>)
+      onTable.push(<Card key={card} ncss={card} selectCard={this.props.selectCard} selectedCards={this.props.selectedCards} colours={this.props.colours} hintedCards={this.props.hintedCards}/>)
     }
     return(
       
@@ -282,7 +280,8 @@ class SetGame extends React.Component {
       titleData: this.generateValid(),
       selectedCards: [],
       cards: deck.slice(0, this.noP * 4),
-      remainingCards: deck.slice (this.noP * 4)  
+      remainingCards: deck.slice (this.noP * 4),
+      hintedCards:[]  
     };
     this.colours = {'0': 'red',
                     '1': 'green',
@@ -293,6 +292,7 @@ class SetGame extends React.Component {
     this.checkIfSetOnTable = this.checkIfSetOnTable.bind(this);
     this.removeCards = this.removeCards.bind(this);
     this.reload = this.reload.bind(this);
+    this.generateHint = this.generateHint.bind(this);
   }
 
   reload(){
@@ -307,7 +307,8 @@ class SetGame extends React.Component {
       titleData: this.generateValid(),
       selectedCards: [],
       cards: deck.slice(0, this.noP * 4),
-      remainingCards: deck.slice (this.noP * 4)  
+      remainingCards: deck.slice (this.noP * 4),
+      hintedCards:[]   
     });
   }
 
@@ -343,20 +344,38 @@ class SetGame extends React.Component {
     return arr;
   }
 
-  countSets() {
+  findValidSetsOnTable(){
     const cards = this.state.cards;
-    let setCounter = 0;
+    const validSets = [];
     for (let i1 = 0; i1 < cards.length; i1++){
       for (let i2 = i1 + 1; i2 < cards.length; i2++){
         for (let i3 = i2 + 1; i3 < cards.length; i3++){
           const possibleSet = [cards[i1], cards[i2], cards[i3]];
           if (this.isValid(possibleSet)){  
-            setCounter ++;
+            validSets.push(possibleSet);
           }
         }
       }
     }
-    return setCounter;
+    console.log(validSets);
+    return validSets;
+  }
+
+  countSets() {
+    return this.findValidSetsOnTable().length;
+  }
+
+  generateHint(){
+    if (this.countSets() === 0){
+      alert('You should click red button')
+    }
+    else {
+      const hintedCards = this.fisherYatesShuffle(this.fisherYatesShuffle(this.findValidSetsOnTable())[0]);
+      console.log(hintedCards);
+      this.setState({
+        hintedCards: hintedCards
+      });
+    }
   }
 
   selectCard(ncss) {
@@ -475,13 +494,14 @@ class SetGame extends React.Component {
   }
 
   checkIfSetOnTable() {
-    if (this.countSets() > 0) {
+    const numberOfSets = this.countSets();
+    if (numberOfSets > 0) {
       const fails = this.state.fails;
       fails.splice(-1, 1, fails[fails.length - 1] + 1);
       this.setState({
         fails: fails
       });
-      const msg = this.countSets() === 1 ? 'There is exactly one set on the table.' : `There are ${this.countSets()} sets on the table.`; 
+      const msg = numberOfSets === 1 ? 'There is exactly one set on the table.' : `There are ${numberOfSets} sets on the table.`; 
       alert(msg)
     }
     else {
@@ -492,6 +512,7 @@ class SetGame extends React.Component {
         cards: cards,
         remainingCards: remainingCards.slice(this.noP)
       });
+      this.generateTitle();
     }
   }
 
@@ -518,7 +539,7 @@ class SetGame extends React.Component {
     return {cArr: cArr, sArr: sArr};
   }
 
-  isValid2(ncData){
+  isTitleValidSet(ncData){
     const {cArr, sArr} = ncData;
     let valSet = new Set();
     for(const c of cArr){
@@ -539,7 +560,7 @@ class SetGame extends React.Component {
 
   generateValid(){
     let ncData = this.generateRandom();
-    while (!this.isValid2(ncData)){
+    while (!this.isTitleValidSet(ncData)){
       ncData = this.generateRandom();
     }
     return ncData;
@@ -547,7 +568,7 @@ class SetGame extends React.Component {
 
   generateInvalid(){
     let ncData = this.generateRandom();
-    while (this.isValid2(ncData)){
+    while (this.isTitleValidSet(ncData)){
       ncData = this.generateRandom();
     }
     return ncData;
@@ -583,17 +604,16 @@ class SetGame extends React.Component {
          <button className='noSet button' onClick={this.checkIfSetOnTable}>There is no SET!</button>
          <button className={!this.state.stats? 'toggle-stats button' : 'toggle-stats-selected button'} onClick={this.toggleStats}>{!this.state.stats? 'Show stats' : 'Hide stats'}</button>
          <button className='reload button' onClick={this.reload}>Reload</button>
-
+         <button className='hint button' onClick={this.generateHint}>Hint</button>
        </div>
        <Rules rules={this.state.rules}/>
        <Stats stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
-       <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards} colours={this.colours}/>
+       <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards} colours={this.colours} hintedCards={this.state.hintedCards}/>
        
         
         <div className='debugInfo'>
           <button className='delete-cards-btn' onClick={this.removeCards}>Remove remaining cards.</button>
-          <span>{this.countSets()}</span>
-          <br/>
+          
           <span>{this.state.fails}</span>
           <br/>
           <span>{this.state.successTimes}</span>

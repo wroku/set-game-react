@@ -38,7 +38,7 @@ h1 {
   border-width: 2px;
   border-radius: 8px;
 }
-.card:hover{
+.card:hover {
   border-width: 4px;
   box-shadow: 0 10px 13px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
 }
@@ -77,9 +77,9 @@ h1 {
   margin-bottom:2rem;
 }
 .button{
-  margin: 0 1rem 0 1rem;
+  margin: 0 0.5rem 0 0.5rem;
   transition-duration: 0.4s;
-  font-size: 1.1rem;
+  font-size: 1rem;
   padding: 8px 16px;
   border-radius:4px;
   background-color: white; 
@@ -124,15 +124,53 @@ h1 {
 .reload:hover{
   background-color: yellowgreen;
 }
+.hint{
+  border: 2px solid yellow;
+}
+.hint:hover{
+  background-color: yellow;
+  color: black;
+}
 .row{
   display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
 }
 .column{
-  flex: 30%;
+  float:left;
+  width: 8%;
 }
-.first{
-  flex-basis: 15rem;
+.values1{
+  width: 15%;
 }
+.first {
+  margin-left: 1rem;
+  width: 40%;
+}
+.second{
+  width: 34%;
+}
+.row:after{
+content:'';
+display:table;
+clear:both;
+}
+
 .debugInfo{
   display: none;
+}
+
+@keyframes hint {
+  0%   {background-color:white; }
+  50%  {background-color: rgb(243, 227, 82);
+        border-color: yellow;
+        box-shadow: 0 10px 13px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+        }
+  100% {background-color:white;}
+}
+
+.hinted{
+  animation-name: hint;
+  animation-duration: 3s;
 }
