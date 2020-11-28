@@ -203,16 +203,16 @@ class Card extends React.Component {
           <rect id="myShape1" x='160' y = '30' width='80' height='140' rx='44' />
           <polygon id="myShape2" points='210,30 160,100 210,170 260,100' />
 
-          <pattern id='diagonal-stripes0' x='0' y='0' width ='8' height='8' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
-            <rect c='0' y='0' width='4' height='8' stroke='none' fill={colours['0']} />
+          <pattern id='diagonal-stripes0' x='0' y='0' width ='10' height='10' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
+            <rect c='0' y='0' width='5' height='10' stroke='none' fill={colours['0']} />
           </pattern>
 
-          <pattern id='diagonal-stripes1' x='0' y='0' width ='8' height='8' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
-            <rect c='0' y='0' width='4' height='8' stroke='none' fill={colours['1']} />
+          <pattern id='diagonal-stripes1' x='0' y='0' width ='10' height='10' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
+            <rect c='0' y='0' width='5' height='10' stroke='none' fill={colours['1']} />
           </pattern>
 
-          <pattern id='diagonal-stripes2' x='0' y='0' width ='8' height='8' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
-            <rect c='0' y='0' width='4' height='8' stroke='none' fill={colours['2']} />
+          <pattern id='diagonal-stripes2' x='0' y='0' width ='10' height='10' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
+            <rect c='0' y='0' width='5' height='10' stroke='none' fill={colours['2']} />
           </pattern>
 
           <linearGradient id="myGradient0" gradientTransform="rotate(90)">
@@ -628,12 +628,16 @@ class SetGame extends React.Component {
   }
 
   render() {
+    const width = window.innerWidth
+    || document.documentElement.clientWidth
+    || document.body.clientWidth;
     return(
       <div>
+        <span>{width}</span>
        <Title colours={this.colours} ncData={this.state.titleData}/>
        <div className='button-wrapper'>
          <button className={!this.state.rules? 'toggle-rules button' : 'toggle-rules-selected button'} onClick={this.toggleRules}>{!this.state.rules? 'Show rules' : 'Hide rules'}</button>
-         <button className={!this.state.noSetHint? 'noSet button': 'noSet-hint button'} onClick={this.checkIfSetOnTable}>There is no SET!</button>
+    <button className={!this.state.noSetHint? 'noSet button': 'noSet-hint button'} onClick={this.checkIfSetOnTable}>{width < 450 ?'No set!':'There is no SET!'}</button>
          <button className={!this.state.stats? 'toggle-stats button' : 'toggle-stats-selected button'} onClick={this.toggleStats}>{!this.state.stats? 'Show stats' : 'Hide stats'}</button>
          <button className='reload button' onClick={this.reload}>Reload</button>
          <button className='hint button' disabled={this.state.noSetHint || this.state.hintedCards.length > 0} onClick={this.generateHint}>Hint</button>
