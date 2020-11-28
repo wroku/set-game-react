@@ -262,7 +262,7 @@ class Table extends React.Component {
 
 class SetGame extends React.Component {
 
-  /*state: success, reload, hint, footer, responsivnes, score&time animations  showTimer, hideTimer
+  /*state: success, footer, responsivnes, score&time animations  showTimer, hideTimer
   */
 
   constructor(props){
@@ -281,6 +281,7 @@ class SetGame extends React.Component {
       selectedCards: [],
       cards: deck.slice(0, this.noP * 4),
       remainingCards: deck.slice (this.noP * 4),
+      noSetHint: false,
       hintedCards:[]  
     };
     this.colours = {'0': 'red',
@@ -308,7 +309,8 @@ class SetGame extends React.Component {
       selectedCards: [],
       cards: deck.slice(0, this.noP * 4),
       remainingCards: deck.slice (this.noP * 4),
-      hintedCards:[]   
+      hintedCards:[],
+      noSetHint: false
     });
   }
 
@@ -345,6 +347,7 @@ class SetGame extends React.Component {
   }
 
   findValidSetsOnTable(){
+    /* go through all possible combinations of cards on the table looking for valid sets.*/
     const cards = this.state.cards;
     const validSets = [];
     for (let i1 = 0; i1 < cards.length; i1++){
@@ -357,7 +360,6 @@ class SetGame extends React.Component {
         }
       }
     }
-    console.log(validSets);
     return validSets;
   }
 
@@ -367,15 +369,23 @@ class SetGame extends React.Component {
 
   generateHint(){
     if (this.countSets() === 0){
-      alert('You should click red button')
+      this.setState({
+        noSetHint: true
+      });
+      setTimeout(() => this.setState({noSetHint: false}), 3000);
     }
     else {
       const hintedCards = this.fisherYatesShuffle(this.fisherYatesShuffle(this.findValidSetsOnTable())[0]);
-      console.log(hintedCards);
-      this.setState({
-        hintedCards: hintedCards
-      });
+      for (let i = 0; i< hintedCards.length; i++){
+        setTimeout(() => this.setState({hintedCards: hintedCards.slice(0, i+1)}), i*500);
+      }
+      setTimeout(() => this.setState({hintedCards: []}), 4000);
     }
+    const fails = this.state.fails;
+    fails.splice(-1, 1, fails[fails.length - 1] + 1);
+    this.setState({
+      fails: fails
+      });
   }
 
   selectCard(ncss) {
@@ -433,6 +443,7 @@ class SetGame extends React.Component {
         }
         this.generateTitle();
       }
+
       /* Near finish part */
       else {
         for(const card of this.state.selectedCards){
@@ -601,10 +612,10 @@ class SetGame extends React.Component {
        <Title colours={this.colours} ncData={this.state.titleData}/>
        <div className='button-wrapper'>
          <button className={!this.state.rules? 'toggle-rules button' : 'toggle-rules-selected button'} onClick={this.toggleRules}>{!this.state.rules? 'Show rules' : 'Hide rules'}</button>
-         <button className='noSet button' onClick={this.checkIfSetOnTable}>There is no SET!</button>
+         <button className={!this.state.noSetHint? 'noSet button': 'noSet-hint button'} onClick={this.checkIfSetOnTable}>There is no SET!</button>
          <button className={!this.state.stats? 'toggle-stats button' : 'toggle-stats-selected button'} onClick={this.toggleStats}>{!this.state.stats? 'Show stats' : 'Hide stats'}</button>
          <button className='reload button' onClick={this.reload}>Reload</button>
-         <button className='hint button' onClick={this.generateHint}>Hint</button>
+         <button className='hint button' disabled={this.state.noSetHint || this.state.hintedCards.length > 0} onClick={this.generateHint}>Hint</button>
        </div>
        <Rules rules={this.state.rules}/>
        <Stats stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
