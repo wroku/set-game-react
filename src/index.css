@@ -216,10 +216,14 @@ clear:both;
 
 footer {
   width: 650px;
-  margin: 30px auto 0;
+  margin: 40px auto 0;
   text-align: center;
 }
 
 .icon{
  margin: 0 2rem 0 2rem;
+}
+
+.icon:hover{
+  color:'black';
 }

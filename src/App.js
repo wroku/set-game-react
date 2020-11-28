@@ -282,7 +282,9 @@ class SetGame extends React.Component {
       cards: deck.slice(0, this.noP * 4),
       remainingCards: deck.slice (this.noP * 4),
       noSetHint: false,
-      hintedCards:[]  
+      hintedCards:[],
+      cardsToHint:[],
+      hintLvl: 1  
     };
     this.colours = {'0': 'red',
                     '1': 'green',
@@ -309,8 +311,10 @@ class SetGame extends React.Component {
       selectedCards: [],
       cards: deck.slice(0, this.noP * 4),
       remainingCards: deck.slice (this.noP * 4),
+      noSetHint: false,
       hintedCards:[],
-      noSetHint: false
+      cardsToHint:[],
+      hintLvl:1,
     });
   }
 
@@ -375,11 +379,20 @@ class SetGame extends React.Component {
       setTimeout(() => this.setState({noSetHint: false}), 3000);
     }
     else {
-      const hintedCards = this.fisherYatesShuffle(this.fisherYatesShuffle(this.findValidSetsOnTable())[0]);
-      for (let i = 0; i< hintedCards.length; i++){
-        setTimeout(() => this.setState({hintedCards: hintedCards.slice(0, i+1)}), i*500);
+      if(this.state.hintLvl === 1){
+        const cardsToHint = this.fisherYatesShuffle(this.fisherYatesShuffle(this.findValidSetsOnTable())[0]);
+        this.setState({
+          cardsToHint: cardsToHint
+        });
       }
-      setTimeout(() => this.setState({hintedCards: []}), 4000);
+      
+      
+      for (let i = 0; i < this.state.hintLvl; i++){
+        setTimeout(() => this.setState({hintedCards: this.state.cardsToHint.slice(0, i+1)}), i*500);
+      }
+      const delay = (this.state.hintLvl - 1) * 500;
+      setTimeout(() => this.setState({hintedCards: []}), 3000 + delay);
+      this.setState((state) => ({hintLvl: state.hintLvl === 3 ? 1: state.hintLvl + 1}));
     }
     const fails = this.state.fails;
     fails.splice(-1, 1, fails[fails.length - 1] + 1);
@@ -424,7 +437,11 @@ class SetGame extends React.Component {
           fails.push(0);
           this.setState({
             cards: cards,
-            fails: fails
+            fails: fails,
+            noSetHint: false,
+            hintedCards:[],
+            cardsToHint:[],
+            hintLvl:1,
           });
         }
         else {
@@ -438,7 +455,11 @@ class SetGame extends React.Component {
           this.setState({
             cards: cards,
             remainingCards: remainingCards.slice(this.noP),
-            fails: fails
+            fails: fails,
+            noSetHint: false,
+            hintedCards:[],
+            cardsToHint:[],
+            hintLvl:1,
           });
         }
         this.generateTitle();
@@ -625,9 +646,11 @@ class SetGame extends React.Component {
         <div className='debugInfo'>
           <button className='delete-cards-btn' onClick={this.removeCards}>Remove remaining cards.</button>
           
-          <span>{this.state.fails}</span>
+          <span>{this.state.cardsToHint}</span>
           <br/>
-          <span>{this.state.successTimes}</span>
+          <span>{this.state.hintedCards}</span>
+          <br/>
+          <span>{this.state.hintLvl}</span>
         </div>
       </div>
     );
