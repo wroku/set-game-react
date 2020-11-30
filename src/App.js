@@ -15,14 +15,16 @@ class Rules extends React.Component {
     return(
       <div className='rules'>
         <div className={className}>
+          <div className='important'>
         Try to find and select cards forming a set.
-        A set consists of three cards satisfying <b>all</b> of these conditions:
+        A set consists of <b>3 cards satisfying all of these conditions:</b>
         <ul>
           <li>They all have the same number or have three different numbers.</li>
           <li>They all have the same shape or have three different shapes.</li>
           <li>They all have the same shading or have three different shadings.</li>
           <li>They all have the same color or have three different colors.</li>
         </ul>
+        </div>
         For example, letters S, E and T have diffrent shapes and each of these occurs only once in the title above.
         Their colours and shadings also satisfies our conditions. At least on the first deal, later - it depends...
         What brings us to the last matter - if you think that there is no set on the table you can ask for 3 additional cards using red button.
@@ -155,7 +157,6 @@ class Card extends React.Component {
     });
 
     const xLink = "#myShape" + shape;
-    const myGradient = "url('#myGradient" + colour + "')";
     const colours = this.props.colours;
     let usePhrase;
     let fill;
@@ -215,24 +216,8 @@ class Card extends React.Component {
             <rect c='0' y='0' width='5' height='10' stroke='none' fill={colours['2']} />
           </pattern>
 
-          <linearGradient id="myGradient0" gradientTransform="rotate(90)">
-            <stop offset="20%" stopColor="gold" />
-            <stop offset="90%" stopColor="red" />
-          </linearGradient>
-
-          <linearGradient id="myGradient1" gradientTransform="rotate(130)">
-            <stop offset="20%" stopColor="aquamarine" />
-            <stop offset="90%" stopColor="blueviolet" />
-          </linearGradient>
-
-          <linearGradient id="myGradient2" gradientTransform="rotate(90)">
-            <stop offset="20%" stopColor="darkgoldenrod" />
-            <stop offset="90%" stopColor="darkgreen" />
-          </linearGradient>
-
         </defs>
   
-        
         {usePhrase}
 
         </svg>
@@ -628,16 +613,13 @@ class SetGame extends React.Component {
   }
 
   render() {
-    const width = window.innerWidth
-    || document.documentElement.clientWidth
-    || document.body.clientWidth;
     return(
       <div>
-        <span>{width}</span>
        <Title colours={this.colours} ncData={this.state.titleData}/>
        <div className='button-wrapper'>
          <button className={!this.state.rules? 'toggle-rules button' : 'toggle-rules-selected button'} onClick={this.toggleRules}>{!this.state.rules? 'Show rules' : 'Hide rules'}</button>
-    <button className={!this.state.noSetHint? 'noSet button': 'noSet-hint button'} onClick={this.checkIfSetOnTable}>{width < 450 ?'No set!':'There is no SET!'}</button>
+         <button className={!this.state.noSetHint? 'noSet button short': 'noSet-hint button short'} onClick={this.checkIfSetOnTable}>No set!</button>
+         <button className={!this.state.noSetHint? 'noSet button long': 'noSet-hint button long'} onClick={this.checkIfSetOnTable}>There is no SET!</button>
          <button className={!this.state.stats? 'toggle-stats button' : 'toggle-stats-selected button'} onClick={this.toggleStats}>{!this.state.stats? 'Show stats' : 'Hide stats'}</button>
          <button className='reload button' onClick={this.reload}>Reload</button>
          <button className='hint button' disabled={this.state.noSetHint || this.state.hintedCards.length > 0} onClick={this.generateHint}>Hint</button>
