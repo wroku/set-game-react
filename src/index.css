@@ -44,19 +44,8 @@ h1 {
   box-shadow: 0 10px 13px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
 }
 
-.cardspan {
-  font-size:1.2rem;
-  margin: 5px 5px 5px 5px;
-}
-
-.cardspan:hover {
-  font-weight: bold;
-}
-
 .selected {
-  font-weight: bold;
-  border-width: 5px;
-  background-color: white;
+  border-width: 3px;
 }
 
 .svg-shapes-box {
@@ -79,9 +68,9 @@ h1 {
 }
 
 .stats {
-  font-size: 1.3rem;
-  margin-left: 1.5rem;
-  margin-right: 1.5rem;
+  font-size: 0.9rem;
+  margin-left: 0.3rem;
+  margin-right: 0.3rem;
 }
 
 .title-wrapper {
@@ -195,7 +184,7 @@ h1 {
 }
 
 .first {
-  margin-left: 1rem;
+  margin-left: 0.2rem;
   width: 40%;
 }
 
@@ -210,7 +199,7 @@ clear:both;
 }
 
 .debugInfo {
-  display: none;
+  display: inline;
 }
 
 @keyframes hint {
@@ -239,6 +228,27 @@ footer {
   color:'black';
 }
 
+@keyframes timeFlies{
+  100% {
+    left: 70%;
+    opacity: 20%;
+  }
+}
+
+.timeAnimated{
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  font-size: 2rem;
+  color: #4CAF50;
+}
+.show {
+  display: inline;
+  animation-name: timeFlies;
+  animation-duration: 5s;
+}
+
 @media only screen and (min-device-width: 450px) {
   #root{
     width: 450px;
@@ -250,7 +260,7 @@ footer {
     height: 6rem;
     margin: 5px 5px 5px 5px;
   }
-  .card:hover {
+  .card:hover, .selected {
     border-width: 4px;
   }
   .button {
@@ -264,6 +274,14 @@ footer {
   }
   .short{
     display: none;
+  }
+  .stats {
+    font-size: 1rem;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+  }
+  .first {
+    margin-left: 0.5rem;
   }
 }
 @media only screen and (min-device-width: 550px) {
@@ -290,6 +308,11 @@ footer {
   .important{
     font-size: 1.1rem;
   }
+  .stats {
+    font-size: 1.1rem;
+    margin-left: 1rem;
+    margin-right: 0.5rem;
+  }
 }
 
 @media only screen and (min-device-width: 650px) {
@@ -306,4 +329,14 @@ footer {
     margin: 0 0.5rem 0 0.5rem;
     font-size: 1rem;
   }
+  .stats {
+    font-size: 1.3rem;
+    margin-left: 1.5rem;
+    margin-right: 0.5rem;
+  }
+  .timeAnimated{
+    font-size: 4rem;
+    left:20%;
+  }
 }
+

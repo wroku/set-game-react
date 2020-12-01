@@ -135,11 +135,30 @@ class Title extends React.Component {
           </g>
         </svg>
       </div>
-
-
     );
   }
 }
+
+class ShowTime extends React.Component {
+  render(){
+    const className = classNames({
+      'timeAnimated': true,
+      'show': this.props.show
+    })
+    return(
+      <div className={className}>
+        <span>
+          <svg width="0.8em" height="0.8em" viewBox="0 0 16 16" class="bi bi-clock" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm8-7A8 8 0 1 1 0 8a8 8 0 0 1 16 0z"/>
+            <path fill-rule="evenodd" d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z"/>
+          </svg>
+          &nbsp;{this.props.time}s
+        </span>
+      </div>
+    );
+  }
+}
+
 class Card extends React.Component {
 
   render() {
@@ -247,7 +266,7 @@ class Table extends React.Component {
 
 class SetGame extends React.Component {
 
-  /*state: success, footer, responsivnes, score&time animations  showTimer, hideTimer
+  /*state: success, responsivnes, score&time animations  showTimer, hideTimer
   */
 
   constructor(props){
@@ -269,7 +288,8 @@ class SetGame extends React.Component {
       noSetHint: false,
       hintedCards:[],
       cardsToHint:[],
-      hintLvl: 1  
+      hintLvl: 1,
+      showTime: false  
     };
     this.colours = {'0': 'red',
                     '1': 'green',
@@ -281,6 +301,7 @@ class SetGame extends React.Component {
     this.removeCards = this.removeCards.bind(this);
     this.reload = this.reload.bind(this);
     this.generateHint = this.generateHint.bind(this);
+    this.showTime = this.showTime.bind(this);
   }
 
   reload(){
@@ -300,6 +321,7 @@ class SetGame extends React.Component {
       hintedCards:[],
       cardsToHint:[],
       hintLvl:1,
+      showTime: false 
     });
   }
 
@@ -407,8 +429,8 @@ class SetGame extends React.Component {
 
   lastSelected() {
     if(this.isValid(this.state.selectedCards)){
-      this.calculateElapsed()
-      alert(`hurray! Your time: ${this.state.successTimes[this.state.successTimes.length -1 ]}`);
+      this.calculateElapsed();
+      this.showTime();
       const cards = this.state.cards;
       const remainingCards = this.state.remainingCards;
 
@@ -612,7 +634,15 @@ class SetGame extends React.Component {
     });
   }
 
+  showTime(){
+    this.setState({
+      showTime: true
+    });
+    setTimeout(() => this.setState({showTime: false}), 4000);
+  }
+
   render() {
+    
     return(
       <div>
        <Title colours={this.colours} ncData={this.state.titleData}/>
@@ -626,12 +656,13 @@ class SetGame extends React.Component {
        </div>
        <Rules rules={this.state.rules}/>
        <Stats stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
+       <ShowTime show={this.state.showTime} time={this.state.successTimes[this.state.successTimes.length - 1]}/>
        <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards} colours={this.colours} hintedCards={this.state.hintedCards}/>
        
         
         <div className='debugInfo'>
           <button className='delete-cards-btn' onClick={this.removeCards}>Remove remaining cards.</button>
-          
+          <button className='show-time-btn' onClick={this.showTime}>show time!</button>
           <span>{this.state.cardsToHint}</span>
           <br/>
           <span>{this.state.hintedCards}</span>
