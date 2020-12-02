@@ -169,10 +169,15 @@ class Card extends React.Component {
     const shading = this.props.ncss[3];
     const isSelected = !(this.props.selectedCards.indexOf(this.props.ncss) === -1)
     const isHinted = !(this.props.hintedCards.indexOf(this.props.ncss) === -1)
-    const className = classNames({
+    const classNameCard = classNames({
       'card': true,
       'selected' : isSelected,
       'hinted': isHinted
+    });
+
+    const classNameScore = classNames({
+      'score-wrapper': true,
+      'animate': this.props.showTime && isSelected && !isHinted
     });
 
     const xLink = "#myShape" + shape;
@@ -215,7 +220,7 @@ class Card extends React.Component {
     }
 
     return (
-      <div className={className} onClick={this.props.selectCard.bind(this, this.props.ncss)}>
+      <div className={classNameCard} onClick={this.props.selectCard.bind(this, this.props.ncss)}>
         <svg className='svg-shapes-box' viewBox="0 0 400 200">
         <defs>
           
@@ -236,10 +241,14 @@ class Card extends React.Component {
           </pattern>
 
         </defs>
-  
+        
         {usePhrase}
-
+        
         </svg>
+        <div className={classNameScore}>
+          <div className='scorePoint'>+1</div>
+        </div>
+        
       </div>
     
     );
@@ -253,7 +262,7 @@ class Table extends React.Component {
     let onTable = [];
 
     for(const card of this.props.cards){
-      onTable.push(<Card key={card} ncss={card} selectCard={this.props.selectCard} selectedCards={this.props.selectedCards} colours={this.props.colours} hintedCards={this.props.hintedCards}/>)
+      onTable.push(<Card key={card} ncss={card} selectCard={this.props.selectCard} selectedCards={this.props.selectedCards} colours={this.props.colours} hintedCards={this.props.hintedCards} showTime={this.props.showTime}/>)
     }
     return(
       
@@ -289,7 +298,7 @@ class SetGame extends React.Component {
       hintedCards:[],
       cardsToHint:[],
       hintLvl: 1,
-      showTime: false  
+      showTime: false 
     };
     this.colours = {'0': 'red',
                     '1': 'green',
@@ -431,7 +440,7 @@ class SetGame extends React.Component {
     if(this.isValid(this.state.selectedCards)){
       this.calculateElapsed();
       this.showTime();
-      const cards = this.state.cards;
+      const cards = this.state.cards.slice();
       const remainingCards = this.state.remainingCards;
 
       /* Usual game */
@@ -442,14 +451,13 @@ class SetGame extends React.Component {
           }
           const fails = this.state.fails;
           fails.push(0);
-          this.setState({
+          setTimeout(() => this.setState({
             cards: cards,
             fails: fails,
             noSetHint: false,
             hintedCards:[],
             cardsToHint:[],
-            hintLvl:1,
-          });
+            hintLvl:1}), 3000);
         }
         else {
           let i = 0;
@@ -459,15 +467,16 @@ class SetGame extends React.Component {
           }
           const fails = this.state.fails;
           fails.push(0);
-          this.setState({
-            cards: cards,
+          
+          setTimeout(() => {this.setState({
+            cards:cards,
             remainingCards: remainingCards.slice(this.noP),
             fails: fails,
             noSetHint: false,
             hintedCards:[],
             cardsToHint:[],
-            hintLvl:1,
-          });
+            hintLvl:1});
+          }, 3000);
         }
         this.generateTitle();
       }
@@ -657,7 +666,7 @@ class SetGame extends React.Component {
        <Rules rules={this.state.rules}/>
        <Stats stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
        <ShowTime show={this.state.showTime} time={this.state.successTimes[this.state.successTimes.length - 1]}/>
-       <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards} colours={this.colours} hintedCards={this.state.hintedCards}/>
+       <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards} colours={this.colours} hintedCards={this.state.hintedCards} showTime={this.state.showTime}/>
        
         
         <div className='debugInfo'>

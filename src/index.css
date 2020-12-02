@@ -230,7 +230,7 @@ footer {
 
 @keyframes timeFlies{
   100% {
-    left: 70%;
+    top: 0%;
     opacity: 20%;
   }
 }
@@ -239,7 +239,7 @@ footer {
   display: none;
   position: absolute;
   top: 50%;
-  left: 0%;
+  left: 50%;
   font-size: 2rem;
   color: #4CAF50;
 }
@@ -336,7 +336,31 @@ footer {
   }
   .timeAnimated{
     font-size: 4rem;
-    left:20%;
   }
 }
 
+
+@keyframes scoresUp{
+  10%{
+    opacity:100%;
+  }
+  100%{
+    top: -300%;
+    opacity: 10%;
+  }
+}
+.score-wrapper{
+  position:relative;
+  top:-50%;
+  left:35%;
+  opacity:0%;
+}
+.scorePoint{
+  position:absolute;
+  color:green;
+  font-size: 3rem;
+}
+.animate{
+  animation:scoresUp;
+  animation-duration: 3s;
+}
