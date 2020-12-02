@@ -169,6 +169,7 @@ class Card extends React.Component {
     const shading = this.props.ncss[3];
     const isSelected = !(this.props.selectedCards.indexOf(this.props.ncss) === -1)
     const isHinted = !(this.props.hintedCards.indexOf(this.props.ncss) === -1)
+    const isExcluded = !(this.props.excludedFromScore.indexOf(this.props.ncss) === -1)
     const classNameCard = classNames({
       'card': true,
       'selected' : isSelected,
@@ -177,7 +178,7 @@ class Card extends React.Component {
 
     const classNameScore = classNames({
       'score-wrapper': true,
-      'animate': this.props.showTime && isSelected && !isHinted
+      'animate': this.props.showTime && isSelected && !isExcluded
     });
 
     const xLink = "#myShape" + shape;
@@ -262,7 +263,7 @@ class Table extends React.Component {
     let onTable = [];
 
     for(const card of this.props.cards){
-      onTable.push(<Card key={card} ncss={card} selectCard={this.props.selectCard} selectedCards={this.props.selectedCards} colours={this.props.colours} hintedCards={this.props.hintedCards} showTime={this.props.showTime}/>)
+      onTable.push(<Card key={card} ncss={card} selectCard={this.props.selectCard} selectedCards={this.props.selectedCards} colours={this.props.colours} hintedCards={this.props.hintedCards} showTime={this.props.showTime} excludedFromScore={this.props.excludedFromScore}/>)
     }
     return(
       
@@ -276,6 +277,8 @@ class Table extends React.Component {
 class SetGame extends React.Component {
 
   /*state: success, responsivnes, score&time animations  showTimer, hideTimer
+    check code for mutability
+    failed attempts => hints used  
   */
 
   constructor(props){
@@ -297,6 +300,7 @@ class SetGame extends React.Component {
       noSetHint: false,
       hintedCards:[],
       cardsToHint:[],
+      excludedFromScore:[],
       hintLvl: 1,
       showTime: false 
     };
@@ -329,6 +333,7 @@ class SetGame extends React.Component {
       noSetHint: false,
       hintedCards:[],
       cardsToHint:[],
+      excludedFromScore:[],
       hintLvl:1,
       showTime: false 
     });
@@ -402,7 +407,10 @@ class SetGame extends React.Component {
         });
       }
       
-      
+      this.setState({
+        excludedFromScore:this.state.cardsToHint.slice(0, this.state.hintLvl)
+      });
+
       for (let i = 0; i < this.state.hintLvl; i++){
         setTimeout(() => this.setState({hintedCards: this.state.cardsToHint.slice(0, i+1)}), i*500);
       }
@@ -502,16 +510,17 @@ class SetGame extends React.Component {
           });
         }
       }
+      setTimeout(() => this.setState({selectedCards: []}), 3000)
     }
     else{
       alert('Not a valid set, knucklehead...');
       const fails = this.state.fails;
       fails.splice(-1, 1, fails[fails.length - 1] + 1);
       this.setState({
-        fails: fails
+        fails: fails,
+        selectedCards: []
       });
     }
-    this.setState({selectedCards: []});
   }
 
   isValid(set) {
@@ -666,7 +675,7 @@ class SetGame extends React.Component {
        <Rules rules={this.state.rules}/>
        <Stats stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
        <ShowTime show={this.state.showTime} time={this.state.successTimes[this.state.successTimes.length - 1]}/>
-       <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards} colours={this.colours} hintedCards={this.state.hintedCards} showTime={this.state.showTime}/>
+       <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards} colours={this.colours} hintedCards={this.state.hintedCards} showTime={this.state.showTime} excludedFromScore={this.state.excludedFromScore}/>
        
         
         <div className='debugInfo'>
@@ -674,7 +683,7 @@ class SetGame extends React.Component {
           <button className='show-time-btn' onClick={this.showTime}>show time!</button>
           <span>{this.state.cardsToHint}</span>
           <br/>
-          <span>{this.state.hintedCards}</span>
+          <span>Exc:{this.state.excludedFromScore}</span>
           <br/>
           <span>{this.state.hintLvl}</span>
         </div>
