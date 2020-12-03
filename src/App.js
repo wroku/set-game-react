@@ -316,7 +316,7 @@ function Table(props) {
 class SetGame extends React.Component {
 
   /*state: Nice dialog window for not a valid set & success & noSet fail,
-    check code for mutability
+    check code for mutability, why no scores after removing cards? check if fails.push changes state
     failed attempts => hints used  */
 
   constructor(props){
@@ -527,7 +527,7 @@ class SetGame extends React.Component {
           fails.push(0);
           
           setTimeout(() => {this.setState({
-            cards:cards,
+            cards: cards,
             remainingCards: remainingCards.slice(this.noP),
             fails: fails,
             noSetHint: false,
@@ -536,7 +536,7 @@ class SetGame extends React.Component {
             hintLvl:1});
           }, 3000);
         }
-        this.generateTitle();
+        setTimeout(() => this.generateTitle(), 3000);
       }
 
       /* Near finish part */
@@ -544,22 +544,27 @@ class SetGame extends React.Component {
         for(const card of this.state.selectedCards){
           cards.splice(cards.indexOf(card), 1);
         }
-        this.setState({
+
+        setTimeout(() => this.setState({
           cards: cards
-        });
-        if (this.countSets() > 0){
-          const fails = this.state.fails;
-          fails.push(0);
-          this.setState({
-            fails: fails
-          });
-        }
-        else {
-          this.setState({
-            finished: true,
-            stats: true
-          });
-        }
+          }), 3000);
+
+        setTimeout(() => this.generateTitle(), 3000);
+        setTimeout(() =>{
+          if (this.countSets() > 0){
+            const fails = this.state.fails;
+            fails.push(0);
+            this.setState({
+              fails: fails
+            });
+          }
+          else {
+            this.setState({
+              finished: true,
+              stats: true
+            });
+          }
+        }, 3000);
       }
       setTimeout(() => this.setState({selectedCards: []}), 3000)
     }
