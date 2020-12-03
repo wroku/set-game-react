@@ -80,7 +80,6 @@ class Stats extends React.Component {
 
 class Title extends React.Component {
   
-
   render() {
     const {cArr, sArr} = this.props.ncData;
     const usePhrases = [];
@@ -111,7 +110,6 @@ class Title extends React.Component {
       )
     }
 
-
     return(
       <div className='title-wrapper'>
         <svg className='title-box' viewBox='0 0 420 80'>
@@ -139,25 +137,68 @@ class Title extends React.Component {
   }
 }
 
-class ShowTime extends React.Component {
-  render(){
-    const className = classNames({
-      'time-wrapper': true,
-      'show': this.props.show
-    })
-    return(
-      <div className={className}>
-        <div className='lastTime'>
-          <span>
-            <svg width="0.8em" height="0.8em" viewBox="0 0 16 16" class="bi bi-clock" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-              <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm8-7A8 8 0 1 1 0 8a8 8 0 0 1 16 0z"/>
-              <path fill-rule="evenodd" d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z"/>
-            </svg>
-            &nbsp;{this.props.time}s
-          </span>
-        </div>
+function ShowTime(props) {
+  
+  const className = classNames({
+    'time-wrapper': true,
+    'show': props.show})
+    
+  return(
+    <div className={className}>
+      <div className='lastTime'>
+        <span>
+          <svg width="0.8em" height="0.8em" viewBox="0 0 16 16" class="bi bi-clock" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm8-7A8 8 0 1 1 0 8a8 8 0 0 1 16 0z"/>
+            <path fill-rule="evenodd" d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z"/>
+          </svg>
+          &nbsp;{props.time}s
+        </span>
       </div>
+    </div>
+  );
+}
+
+class CustomAlert extends React.Component {
+
+  render() {
+    const alertWrapperClass = classNames({
+      'alert-wrapper': true,
+      'hidden': !(this.props.success || this.props.failedAttempt || this.props.noSetFail)
+    });
+    const alertStatusClass = classNames({
+        'alert-relative': true,
+        'failedAttempt': this.props.failedAttempt,
+        'success': this.props.success,
+        'noSetFail': this.props.noSetFail,
+      });
+
+    let infoMain, infoAdd;
+    let button = <button className="alert-btn" onClick={this.props.close}>OK</button>  
+    if (this.props.failedAttempt){
+      infoMain = 'This is not a valid set.'
+      infoAdd = this.props.setsOnTable !== 0 ? "Try again or use a hint if you are stuck." : "If you think that there is no set on the table, use red button to deal 3 more cards.";
+    }
+    else if(this.props.noSetFail){
+      infoMain = this.props.setsOnTable === 1 ? 'There is exactly one valid set on the table.' : `There are ${this.props.setsOnTable} valid sets on table.`;
+      infoAdd = `If you are not sure whether to use No Set button, take a good look on the current title.`
+    }
+    else if (this.props.success){
+      infoMain = `Congratulations!`
+      infoAdd = 'You can see your stats above. Good job!'
+      button = <button className="alert-btn" onClick={this.props.reload}>PLAY AGAIN</button>
+    
+    }
+    return(
+      <div className={alertWrapperClass}>
+				<div className={alertStatusClass}>
+					<h2 className="alert-main">{infoMain}</h2>
+          <h4 className='alert-additional'>{infoAdd}</h4>
+          {button}
+				</div>
+				<div className="alert-overlay"></div>
+			</div>
     );
+
   }
 }
 
@@ -202,7 +243,7 @@ class Card extends React.Component {
       stroke = 'none';
     }
 
-    if(number==='0'){
+    if(number === '0'){
       usePhrase = <g>
                     <use x="-10" y="0" xlinkHref={xLink} stroke={stroke} strokeWidth='8' fill={fill} />;
                   </g>
@@ -225,69 +266,68 @@ class Card extends React.Component {
     return (
       <div className={classNameCard} onClick={this.props.selectCard.bind(this, this.props.ncss)}>
         <svg className='svg-shapes-box' viewBox="0 0 400 200">
-        <defs>
-          
-          <path id='myShape0' x='0' y='0' d="M181.081 36.920 C 166.924 44.221,165.015 53.585,173.750 72.878 C 179.514 85.609,180.380 91.380,178.029 101.377 C 169.073 139.460,175.236 158.729,200.000 170.063 C 231.747 184.594,257.710 163.195,238.714 138.154 C 227.051 122.780,226.573 120.104,231.907 100.000 C 238.278 75.985,235.948 59.675,224.514 48.240 C 212.912 36.639,192.130 31.222,181.081 36.920" />
-          <rect id="myShape1" x='170' y = '30' width='80' height='140' rx='44' />
-          <polygon id="myShape2" points='210,30 160,100 210,170 260,100' />
+          <defs>
+            
+            <path id='myShape0' x='0' y='0' d="M181.081 36.920 C 166.924 44.221,165.015 53.585,173.750 72.878 C 179.514 85.609,180.380 91.380,178.029 101.377 C 169.073 139.460,175.236 158.729,200.000 170.063 C 231.747 184.594,257.710 163.195,238.714 138.154 C 227.051 122.780,226.573 120.104,231.907 100.000 C 238.278 75.985,235.948 59.675,224.514 48.240 C 212.912 36.639,192.130 31.222,181.081 36.920" />
+            <rect id="myShape1" x='170' y = '30' width='80' height='140' rx='44' />
+            <polygon id="myShape2" points='210,30 160,100 210,170 260,100' />
 
-          <pattern id='diagonal-stripes0' x='0' y='0' width ='10' height='10' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
-            <rect c='0' y='0' width='5' height='10' stroke='none' fill={colours['0']} />
-          </pattern>
+            <pattern id='diagonal-stripes0' x='0' y='0' width ='10' height='10' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
+              <rect c='0' y='0' width='5' height='10' stroke='none' fill={colours['0']} />
+            </pattern>
 
-          <pattern id='diagonal-stripes1' x='0' y='0' width ='10' height='10' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
-            <rect c='0' y='0' width='5' height='10' stroke='none' fill={colours['1']} />
-          </pattern>
+            <pattern id='diagonal-stripes1' x='0' y='0' width ='10' height='10' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
+              <rect c='0' y='0' width='5' height='10' stroke='none' fill={colours['1']} />
+            </pattern>
 
-          <pattern id='diagonal-stripes2' x='0' y='0' width ='10' height='10' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
-            <rect c='0' y='0' width='5' height='10' stroke='none' fill={colours['2']} />
-          </pattern>
+            <pattern id='diagonal-stripes2' x='0' y='0' width ='10' height='10' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
+              <rect c='0' y='0' width='5' height='10' stroke='none' fill={colours['2']} />
+            </pattern>
 
-        </defs>
+          </defs>
         
-        {usePhrase}
+          {usePhrase}
         
         </svg>
+
         <div className={classNameScore}>
           <div className='scorePoint'>+1</div>
-        </div>
-        
+        </div>  
       </div>
-    
     );
   }
 }
 
-class Table extends React.Component {
+function Table(props) {
   
-
-  render() {
-    let onTable = [];
-
-    for(const card of this.props.cards){
-      onTable.push(<Card key={card} ncss={card} selectCard={this.props.selectCard} selectedCards={this.props.selectedCards} colours={this.props.colours} hintedCards={this.props.hintedCards} showTime={this.props.showTime} excludedFromScore={this.props.excludedFromScore}/>)
-    }
-    return(
-      
-      <div className='table-wrapper'>
-        {onTable}
-      </div>
-    );
+  let onTable = [];
+  for(const card of props.cards){
+    onTable.push(<Card key={card} ncss={card} selectCard={props.selectCard} selectedCards={props.selectedCards} colours={props.colours} hintedCards={props.hintedCards} showTime={props.showTime} excludedFromScore={props.excludedFromScore}/>)
   }
+  
+  return(
+    
+    <div className='table-wrapper'>
+      {onTable}
+    </div>
+  );
 }
 
 class SetGame extends React.Component {
 
-  /*state: success,
+  /*state: Nice dialog window for not a valid set & success & noSet fail,
     check code for mutability
-    failed attempts => hints used  
-  */
+    failed attempts => hints used  */
 
   constructor(props){
+
     super(props);
     this.noP = 3;
-    this.penalty = 10;
+    this.colours = {'0': 'red',
+                    '1': 'green',
+                    '2': 'darkviolet'};
     const deck = this.fisherYatesShuffle(this.generateDeck());
+
     this.state = {
       rules: false,
       stats: false,
@@ -304,19 +344,22 @@ class SetGame extends React.Component {
       cardsToHint:[],
       excludedFromScore:[],
       hintLvl: 1,
-      showTime: false 
+      showTime: false,
+      failedAttempt: false,
+      noSetFail: false, 
     };
-    this.colours = {'0': 'red',
-                    '1': 'green',
-                    '2': 'darkviolet'};
+    
     this.toggleRules = this.toggleRules.bind(this);
     this.toggleStats = this.toggleStats.bind(this);
     this.selectCard = this.selectCard.bind(this);
     this.checkIfSetOnTable = this.checkIfSetOnTable.bind(this);
-    this.removeCards = this.removeCards.bind(this);
     this.reload = this.reload.bind(this);
     this.generateHint = this.generateHint.bind(this);
+    
+    this.closeAlert = this.closeAlert.bind(this);
+    this.removeCards = this.removeCards.bind(this);
     this.showTime = this.showTime.bind(this);
+    this.alert = this.alert.bind(this);
   }
 
   reload(){
@@ -337,7 +380,9 @@ class SetGame extends React.Component {
       cardsToHint:[],
       excludedFromScore:[],
       hintLvl:1,
-      showTime: false 
+      showTime: false,
+      failedAttempt: false,
+      noSetFail: false, 
     });
   }
 
@@ -375,7 +420,7 @@ class SetGame extends React.Component {
 
   findValidSetsOnTable(){
     /* go through all possible combinations of cards on the table looking for valid sets.*/
-    const cards = this.state.cards;
+    const cards = this.state.cards.slice();
     const validSets = [];
     for (let i1 = 0; i1 < cards.length; i1++){
       for (let i2 = i1 + 1; i2 < cards.length; i2++){
@@ -511,17 +556,18 @@ class SetGame extends React.Component {
         }
         else {
           this.setState({
-            finished: true
+            finished: true,
+            stats: true
           });
         }
       }
       setTimeout(() => this.setState({selectedCards: []}), 3000)
     }
     else{
-      alert('Not a valid set, knucklehead...');
       const fails = this.state.fails;
       fails.splice(-1, 1, fails[fails.length - 1] + 1);
       this.setState({
+        failedAttempt: true,
         fails: fails,
         selectedCards: []
       });
@@ -561,10 +607,10 @@ class SetGame extends React.Component {
       const fails = this.state.fails;
       fails.splice(-1, 1, fails[fails.length - 1] + 1);
       this.setState({
-        fails: fails
+        fails: fails,
+        noSetFail: true
       });
-      const msg = numberOfSets === 1 ? 'There is exactly one set on the table.' : `There are ${numberOfSets} sets on the table.`; 
-      alert(msg)
+      
     }
     else {
       const cards = this.state.cards;
@@ -648,6 +694,12 @@ class SetGame extends React.Component {
       });
     }
   }
+  
+  closeAlert(){
+    this.setState({
+      failedAttempt: false,
+      noSetFail: false});
+  }
 
   /*debug functions*/
 
@@ -662,6 +714,11 @@ class SetGame extends React.Component {
       showTime: true
     });
     setTimeout(() => this.setState({showTime: false}), 4000);
+  }
+  
+  alert(){
+    this.setState({
+      finished: true});
   }
 
   render() {
@@ -680,12 +737,13 @@ class SetGame extends React.Component {
        <Rules rules={this.state.rules}/>
        <Stats stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
        <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards} colours={this.colours} hintedCards={this.state.hintedCards} showTime={this.state.showTime} excludedFromScore={this.state.excludedFromScore}/>
+       <CustomAlert success={this.state.finished} noSetFail={this.state.noSetFail} failedAttempt={this.state.failedAttempt} setsOnTable={this.countSets()} reload={this.reload} close={this.closeAlert}/>
        <ShowTime show={this.state.showTime} time={this.state.successTimes[this.state.successTimes.length - 1]}/>
-        
+      
         <div className='debugInfo'>
           <button className='delete-cards-btn' onClick={this.removeCards}>Remove remaining cards.</button>
           <br/>
-          <button className='show-time-btn' onClick={this.showTime}>show time!</button>
+          <button className='show-time-btn' onClick={this.alert}>alert</button>
           <span>{this.state.cardsToHint}</span>
           <br/>
           <span>Exc:{this.state.excludedFromScore}</span>
