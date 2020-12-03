@@ -228,26 +228,63 @@ footer {
   color:'black';
 }
 
+@keyframes scoresUp{
+  10%{
+    opacity:100%;
+  }
+  100%{
+    top: -300%;
+    opacity: 10%;
+  }
+}
+
+.score-wrapper{
+  position:relative;
+  top:-50%;
+  left:40%;
+  opacity:0%;
+}
+
+.scorePoint{
+  position:absolute;
+  color:green;
+  font-size: 1.4rem;
+  cursor: default;
+}
+
+.animate{
+  animation:scoresUp;
+  animation-duration: 3s;
+}
+
 @keyframes timeFlies{
+  20% {
+    opacity:100%;
+  }
   100% {
-    top: 0%;
+    top: -100%;
     opacity: 20%;
   }
 }
 
-.timeAnimated{
-  display: none;
+.time-wrapper{
+  position:relative;
+  top: 0%;
+  left: 35%;
+  opacity:0%;
+  
+}
+.lastTime{
   position: absolute;
-  top: 50%;
-  left: 50%;
-  font-size: 2rem;
-  color: #4CAF50;
+  font-size: 1.6rem;
+  color: green;
+  cursor: default;
 }
 .show {
-  display: inline;
   animation-name: timeFlies;
   animation-duration: 5s;
 }
+
 
 @media only screen and (min-device-width: 450px) {
   #root{
@@ -283,6 +320,18 @@ footer {
   .first {
     margin-left: 0.5rem;
   }
+  .score-wrapper{
+    left:35%;
+  }
+  .scorePoint{
+    font-size: 2.1rem;
+  }
+  .time-wrapper{
+    left: 36%;
+  }
+  .lastTime{
+    font-size: 2.1rem;
+  }
 }
 @media only screen and (min-device-width: 550px) {
   #root{
@@ -313,6 +362,18 @@ footer {
     margin-left: 1rem;
     margin-right: 0.5rem;
   }
+  .score-wrapper{
+    left:35%;
+  }
+  .scorePoint{
+    font-size: 2.6rem;
+  }
+  .time-wrapper{
+    left: 36%;
+  }
+  .lastTime{
+    font-size: 2.6rem;
+  }
 }
 
 @media only screen and (min-device-width: 650px) {
@@ -334,33 +395,16 @@ footer {
     margin-left: 1.5rem;
     margin-right: 0.5rem;
   }
-  .timeAnimated{
-    font-size: 4rem;
+  .scorePoint{
+    font-size: 3rem;
+  }
+  .time-wrapper{
+    left: 36%;
+  }
+  .lastTime{
+    font-size: 3.3rem;
   }
 }
 
 
-@keyframes scoresUp{
-  10%{
-    opacity:100%;
-  }
-  100%{
-    top: -300%;
-    opacity: 10%;
-  }
-}
-.score-wrapper{
-  position:relative;
-  top:-50%;
-  left:35%;
-  opacity:0%;
-}
-.scorePoint{
-  position:absolute;
-  color:green;
-  font-size: 3rem;
-}
-.animate{
-  animation:scoresUp;
-  animation-duration: 3s;
-}
+

@@ -142,18 +142,20 @@ class Title extends React.Component {
 class ShowTime extends React.Component {
   render(){
     const className = classNames({
-      'timeAnimated': true,
+      'time-wrapper': true,
       'show': this.props.show
     })
     return(
       <div className={className}>
-        <span>
-          <svg width="0.8em" height="0.8em" viewBox="0 0 16 16" class="bi bi-clock" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm8-7A8 8 0 1 1 0 8a8 8 0 0 1 16 0z"/>
-            <path fill-rule="evenodd" d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z"/>
-          </svg>
-          &nbsp;{this.props.time}s
-        </span>
+        <div className='lastTime'>
+          <span>
+            <svg width="0.8em" height="0.8em" viewBox="0 0 16 16" class="bi bi-clock" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm8-7A8 8 0 1 1 0 8a8 8 0 0 1 16 0z"/>
+              <path fill-rule="evenodd" d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z"/>
+            </svg>
+            &nbsp;{this.props.time}s
+          </span>
+        </div>
       </div>
     );
   }
@@ -225,8 +227,8 @@ class Card extends React.Component {
         <svg className='svg-shapes-box' viewBox="0 0 400 200">
         <defs>
           
-          <path id='myShape0' x='100' y='0' d="M181.081 36.920 C 166.924 44.221,165.015 53.585,173.750 72.878 C 179.514 85.609,180.380 91.380,178.029 101.377 C 169.073 139.460,175.236 158.729,200.000 170.063 C 231.747 184.594,257.710 163.195,238.714 138.154 C 227.051 122.780,226.573 120.104,231.907 100.000 C 238.278 75.985,235.948 59.675,224.514 48.240 C 212.912 36.639,192.130 31.222,181.081 36.920" />
-          <rect id="myShape1" x='160' y = '30' width='80' height='140' rx='44' />
+          <path id='myShape0' x='0' y='0' d="M181.081 36.920 C 166.924 44.221,165.015 53.585,173.750 72.878 C 179.514 85.609,180.380 91.380,178.029 101.377 C 169.073 139.460,175.236 158.729,200.000 170.063 C 231.747 184.594,257.710 163.195,238.714 138.154 C 227.051 122.780,226.573 120.104,231.907 100.000 C 238.278 75.985,235.948 59.675,224.514 48.240 C 212.912 36.639,192.130 31.222,181.081 36.920" />
+          <rect id="myShape1" x='170' y = '30' width='80' height='140' rx='44' />
           <polygon id="myShape2" points='210,30 160,100 210,170 260,100' />
 
           <pattern id='diagonal-stripes0' x='0' y='0' width ='10' height='10' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
@@ -276,7 +278,7 @@ class Table extends React.Component {
 
 class SetGame extends React.Component {
 
-  /*state: success, responsivnes, score&time animations  showTimer, hideTimer
+  /*state: success,
     check code for mutability
     failed attempts => hints used  
   */
@@ -403,13 +405,16 @@ class SetGame extends React.Component {
       if(this.state.hintLvl === 1){
         const cardsToHint = this.fisherYatesShuffle(this.fisherYatesShuffle(this.findValidSetsOnTable())[0]);
         this.setState({
-          cardsToHint: cardsToHint
+          cardsToHint: cardsToHint,
+          excludedFromScore: cardsToHint[0]
+        });
+      }
+      else{
+        this.setState({
+        excludedFromScore:this.state.cardsToHint.slice(0,this.state.hintLvl)
         });
       }
       
-      this.setState({
-        excludedFromScore:this.state.cardsToHint.slice(0, this.state.hintLvl)
-      });
 
       for (let i = 0; i < this.state.hintLvl; i++){
         setTimeout(() => this.setState({hintedCards: this.state.cardsToHint.slice(0, i+1)}), i*500);
@@ -674,12 +679,12 @@ class SetGame extends React.Component {
        </div>
        <Rules rules={this.state.rules}/>
        <Stats stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
-       <ShowTime show={this.state.showTime} time={this.state.successTimes[this.state.successTimes.length - 1]}/>
        <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards} colours={this.colours} hintedCards={this.state.hintedCards} showTime={this.state.showTime} excludedFromScore={this.state.excludedFromScore}/>
-       
+       <ShowTime show={this.state.showTime} time={this.state.successTimes[this.state.successTimes.length - 1]}/>
         
         <div className='debugInfo'>
           <button className='delete-cards-btn' onClick={this.removeCards}>Remove remaining cards.</button>
+          <br/>
           <button className='show-time-btn' onClick={this.showTime}>show time!</button>
           <span>{this.state.cardsToHint}</span>
           <br/>
