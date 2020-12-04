@@ -180,7 +180,7 @@ class CustomAlert extends React.Component {
     }
     else if(this.props.noSetFail){
       infoMain = this.props.setsOnTable === 1 ? 'There is exactly one valid set on the table.' : `There are ${this.props.setsOnTable} valid sets on table.`;
-      infoAdd = `If you are not sure whether to use No Set button, take a good look on the current title.`
+      infoAdd = `If you are not sure whether to use No Set button, take a good look on the current title. Letters forming proper 'set' indicate presence of valid set on he table.`
     }
     else if (this.props.success){
       infoMain = `Congratulations!`
@@ -315,12 +315,9 @@ function Table(props) {
 
 class SetGame extends React.Component {
 
-  /*state: Nice dialog window for not a valid set & success & noSet fail,
-    check code for mutability, why no scores after removing cards? check if fails.push changes state
-    failed attempts => hints used  */
+  /* failed attempts => hints used?  */
 
   constructor(props){
-
     super(props);
     this.noP = 3;
     this.colours = {'0': 'red',
@@ -440,6 +437,10 @@ class SetGame extends React.Component {
   }
 
   generateHint(){
+    /* Suggest noSet button or random valid set (in random order), taking care of incrementing hints one card at the time, 
+    adding fails for score subtracting and updating excludeFromScore accordingly for proper "+1" animations. Timeout functions 
+    ensure that css animations hooked to particular card or button have enough time to be displayed. */
+    
     if (this.countSets() === 0){
       this.setState({
         noSetHint: true
@@ -456,7 +457,7 @@ class SetGame extends React.Component {
       }
       else{
         this.setState({
-        excludedFromScore:this.state.cardsToHint.slice(0,this.state.hintLvl)
+          excludedFromScore: this.state.cardsToHint.slice(0,this.state.hintLvl)
         });
       }
       
@@ -468,7 +469,7 @@ class SetGame extends React.Component {
       setTimeout(() => this.setState({hintedCards: []}), 3000 + delay);
       this.setState((state) => ({hintLvl: state.hintLvl === 3 ? 1: state.hintLvl + 1}));
     }
-    const fails = this.state.fails;
+    const fails = this.state.fails.slice();
     fails.splice(-1, 1, fails[fails.length - 1] + 1);
     this.setState({
       fails: fails
@@ -476,7 +477,7 @@ class SetGame extends React.Component {
   }
 
   selectCard(ncss) {
-    let selectedCards = this.state.selectedCards;
+    const selectedCards = this.state.selectedCards.slice();
     if (selectedCards.indexOf(ncss) === -1){
       if (selectedCards.length < 3){
         selectedCards.push(ncss);
@@ -486,73 +487,71 @@ class SetGame extends React.Component {
       selectedCards.splice(selectedCards.indexOf(ncss), 1);
     }
     this.setState({
-      selectCards: selectedCards
+      selectedCards: selectedCards
+    }, () => {
+        if (selectedCards.length === this.noP){
+              this.lastSelected();
+        }
     });
-
-    if (selectedCards.length === this.noP){
-      this.lastSelected()
-    }
   }
 
   lastSelected() {
-    if(this.isValid(this.state.selectedCards)){
+    if( this.isValid(this.state.selectedCards)) {
       this.calculateElapsed();
       this.showTime();
       const cards = this.state.cards.slice();
-      const remainingCards = this.state.remainingCards;
+      let remainingCards = this.state.remainingCards.slice();
 
       /* Usual game */
-      if (remainingCards.length > 0){
+      if (remainingCards.length > 0) {
+        const fails = this.state.fails.slice();
+        fails.push(0);
+
         if (cards.length > 12) {
-          for(const card of this.state.selectedCards){
+          /* Just take selected set from table, returning to 12(or 15 if we were really unlucky before), 
+          do not deal 3 more and leave remainingCards be*/
+          for (const card of this.state.selectedCards){
             cards.splice(cards.indexOf(card), 1);
           }
-          const fails = this.state.fails;
-          fails.push(0);
-          setTimeout(() => this.setState({
-            cards: cards,
-            fails: fails,
-            noSetHint: false,
-            hintedCards:[],
-            cardsToHint:[],
-            hintLvl:1}), 3000);
         }
         else {
+          /* Deal three new cards and delete them from remaining deck*/
           let i = 0;
-          for(const card of this.state.selectedCards){
+          for (const card of this.state.selectedCards){
             cards.splice(cards.indexOf(card), 1, remainingCards[i]);
             i++;
           }
-          const fails = this.state.fails;
-          fails.push(0);
-          
-          setTimeout(() => {this.setState({
-            cards: cards,
-            remainingCards: remainingCards.slice(this.noP),
-            fails: fails,
-            noSetHint: false,
-            hintedCards:[],
-            cardsToHint:[],
-            hintLvl:1});
-          }, 3000);
+          remainingCards = remainingCards.slice(this.noP);
         }
-        setTimeout(() => this.generateTitle(), 3000);
+
+        setTimeout(() => this.setState({
+          cards: cards,
+          remainingCards: remainingCards,
+          fails: fails,
+          noSetHint: false,
+          hintedCards: [],
+          cardsToHint: [],
+          hintLvl: 1
+        }, () => {
+          this.generateTitle();
+        }), 3000);
       }
 
       /* Near finish part */
       else {
-        for(const card of this.state.selectedCards){
+        for (const card of this.state.selectedCards) {
           cards.splice(cards.indexOf(card), 1);
         }
 
         setTimeout(() => this.setState({
           cards: cards
+          },() => {
+            this.generateTitle();
           }), 3000);
 
-        setTimeout(() => this.generateTitle(), 3000);
-        setTimeout(() =>{
+        setTimeout(() => {
           if (this.countSets() > 0){
-            const fails = this.state.fails;
+            const fails = this.state.fails.slice();
             fails.push(0);
             this.setState({
               fails: fails
@@ -564,12 +563,12 @@ class SetGame extends React.Component {
               stats: true
             });
           }
-        }, 3000);
+        }, 3300);
       }
       setTimeout(() => this.setState({selectedCards: []}), 3000)
     }
-    else{
-      const fails = this.state.fails;
+    else {
+      const fails = this.state.fails.slice();
       fails.splice(-1, 1, fails[fails.length - 1] + 1);
       this.setState({
         failedAttempt: true,
@@ -618,20 +617,22 @@ class SetGame extends React.Component {
       
     }
     else {
-      const cards = this.state.cards;
+      const cards = this.state.cards.slice();
       const remainingCards = this.state.remainingCards;
       cards.push(...remainingCards.slice(0, this.noP));
       this.setState({
         cards: cards,
         remainingCards: remainingCards.slice(this.noP)
+      },() => { 
+        this.generateTitle();
       });
-      this.generateTitle();
+      
     }
   }
 
   calculateElapsed (){
     const stop = new Date();
-    const successTimes = this.state.successTimes;
+    const successTimes = this.state.successTimes.slice();
     const elapsed = (stop.getTime() - this.state.startTime.getTime())/1000;
     successTimes.push(Math.round(elapsed * 10)/10);
     this.setState ({
@@ -671,7 +672,7 @@ class SetGame extends React.Component {
     return true;
   }
 
-  generateValid(){
+  generateValid() {
     let ncData = this.generateRandom();
     while (!this.isTitleValidSet(ncData)){
       ncData = this.generateRandom();
@@ -679,7 +680,7 @@ class SetGame extends React.Component {
     return ncData;
   }
 
-  generateInvalid(){
+  generateInvalid() {
     let ncData = this.generateRandom();
     while (this.isTitleValidSet(ncData)){
       ncData = this.generateRandom();
@@ -687,7 +688,7 @@ class SetGame extends React.Component {
     return ncData;
   }
 
-  generateTitle(){
+  generateTitle() {
     if (this.countSets(this.state.cards) === 0){
       this.setState({
         titleData: this.generateInvalid()
@@ -700,7 +701,7 @@ class SetGame extends React.Component {
     }
   }
   
-  closeAlert(){
+  closeAlert() {
     this.setState({
       failedAttempt: false,
       noSetFail: false});
@@ -708,20 +709,20 @@ class SetGame extends React.Component {
 
   /*debug functions*/
 
-  removeCards(){
+  removeCards() {
     this.setState({
       remainingCards: []
     });
   }
 
-  showTime(){
+  showTime() {
     this.setState({
       showTime: true
     });
     setTimeout(() => this.setState({showTime: false}), 4000);
   }
   
-  alert(){
+  alert() {
     this.setState({
       finished: true});
   }
@@ -753,13 +754,11 @@ class SetGame extends React.Component {
           <br/>
           <span>Exc:{this.state.excludedFromScore}</span>
           <br/>
-          <span>{this.state.hintLvl}</span>
+          <span>Sel:{this.state.selectedCards}</span>
         </div>
       </div>
     );
   }
 }
-
-
 
 export default SetGame;
