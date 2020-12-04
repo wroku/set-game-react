@@ -150,9 +150,7 @@ h1 {
   border: 2px solid yellowgreen;
 }
 
-.reload:hover {
-  background-color: yellowgreen;
-}
+
 
 .hint {
   border: 2px solid yellow;
@@ -223,10 +221,6 @@ footer {
 
 .icon{
  margin: 0 2rem 0 2rem;
-}
-
-.gh:hover{
-  fill:'black';
 }
 
 .score-wrapper{
@@ -531,6 +525,9 @@ footer {
     height: 40px;
     width: 130px;
     margin-top: 20px;
+  }
+  .reload:hover {
+    background-color: yellowgreen;
   }
 }
 
