@@ -202,6 +202,11 @@ clear:both;
   display: none;
 }
 
+.hinted {
+  animation-name: hint;
+  animation-duration: 4s;
+}
+
 @keyframes hint {
   50%  {background-color: rgb(243, 227, 82);
         border-color: yellow;
@@ -209,10 +214,7 @@ clear:both;
         }
 }
 
-.hinted {
-  animation-name: hint;
-  animation-duration: 4s;
-}
+
 
 footer {
   width: 320px;
@@ -227,6 +229,11 @@ footer {
 
 .gh:hover{
   fill:'black';
+}
+
+.animate{
+  animation:scoresUp;
+  animation-duration: 3s;
 }
 
 @keyframes scoresUp{
@@ -246,6 +253,7 @@ footer {
   opacity:0%;
 }
 
+
 .scorePoint{
   position:absolute;
   color:green;
@@ -253,10 +261,11 @@ footer {
   cursor: default;
 }
 
-.animate{
-  animation:scoresUp;
-  animation-duration: 3s;
+.show {
+  animation-name: timeFlies;
+  animation-duration: 5s;
 }
+
 
 @keyframes timeFlies{
   20% {
@@ -280,10 +289,6 @@ footer {
   font-size: 1.6rem;
   color: green;
   cursor: default;
-}
-.show {
-  animation-name: timeFlies;
-  animation-duration: 5s;
 }
 
 .alert-wrapper {
