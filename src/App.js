@@ -749,7 +749,7 @@ class SetGame extends React.Component {
         <div className='debugInfo'>
           <button className='delete-cards-btn' onClick={this.removeCards}>Remove remaining cards.</button>
           <br/>
-          <button className='show-time-btn' onClick={this.alert}>alert</button>
+          <button className='show-time-btn' onClick={this.showTime}>alert</button>
           <span>{this.state.cardsToHint}</span>
           <br/>
           <span>Exc:{this.state.excludedFromScore}</span>

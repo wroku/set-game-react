@@ -214,8 +214,6 @@ clear:both;
         }
 }
 
-
-
 footer {
   width: 320px;
   margin: 2.5rem auto 2rem;
@@ -261,17 +259,10 @@ footer {
 
 .time-wrapper {
   position:relative;
-  top: 0%;
+  top: 0;
   left: 35%;
   opacity: 0;
-  
 }
-
-.show {
-  animation-name: timeFlies;
-  animation-duration: 5s;
-}
-
 .lastTime{
   position: absolute;
   font-size: 1.6rem;
@@ -279,12 +270,16 @@ footer {
   cursor: default;
 }
 
+.show {
+  animation-name: timeFlies;
+  animation-duration: 5s;
+}
 @keyframes timeFlies{
-  20% {
-    opacity:1;
+  10% {
+    opacity: 1;
   }
   100% {
-    top: -100%;
+    top: -80vh;
     opacity: 0.2;
   }
 }
@@ -478,10 +473,10 @@ footer {
     width: 250px;
   }
   .alert-main {
-      font-size: 1.5rem;
+    font-size: 1.5rem;
   }
   .alert-additional {
-      font-size: 1rem;
+    font-size: 1rem;
   }
   .alert-btn {
     height: 35px;
