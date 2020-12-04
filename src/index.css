@@ -235,7 +235,7 @@ footer {
   position:relative;
   top:-50%;
   left:40%;
-  opacity:0%;
+  opacity: 0;
 }
 
 .scorePoint {
@@ -251,11 +251,11 @@ footer {
 
 @keyframes scoresUp{
   10%{
-    opacity:100%;
+    opacity: 1;
   }
   100%{
     top: -300%;
-    opacity: 10%;
+    opacity: 0.1;
   }
 }
 
@@ -263,7 +263,7 @@ footer {
   position:relative;
   top: 0%;
   left: 35%;
-  opacity:0%;
+  opacity: 0;
   
 }
 
@@ -281,11 +281,11 @@ footer {
 
 @keyframes timeFlies{
   20% {
-    opacity:100%;
+    opacity:1;
   }
   100% {
     top: -100%;
-    opacity: 20%;
+    opacity: 0.2;
   }
 }
 
