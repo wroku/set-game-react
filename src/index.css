@@ -199,7 +199,7 @@ clear:both;
 }
 
 .debugInfo {
-  display: inline;
+  display: none;
 }
 
 @keyframes hint {
