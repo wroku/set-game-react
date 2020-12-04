@@ -231,6 +231,19 @@ footer {
   fill:'black';
 }
 
+.score-wrapper{
+  position:relative;
+  top:-50%;
+  left:40%;
+  opacity:0%;
+}
+
+.scorePoint {
+  position:absolute;
+  color:green;
+  font-size: 1.4rem;
+  cursor: default;
+}
 .animate{
   animation:scoresUp;
   animation-duration: 3s;
@@ -246,19 +259,12 @@ footer {
   }
 }
 
-.score-wrapper{
+.time-wrapper {
   position:relative;
-  top:-50%;
-  left:40%;
+  top: 0%;
+  left: 35%;
   opacity:0%;
-}
-
-
-.scorePoint{
-  position:absolute;
-  color:green;
-  font-size: 1.4rem;
-  cursor: default;
+  
 }
 
 .show {
@@ -266,6 +272,12 @@ footer {
   animation-duration: 5s;
 }
 
+.lastTime{
+  position: absolute;
+  font-size: 1.6rem;
+  color: green;
+  cursor: default;
+}
 
 @keyframes timeFlies{
   20% {
@@ -275,20 +287,6 @@ footer {
     top: -100%;
     opacity: 20%;
   }
-}
-
-.time-wrapper{
-  position:relative;
-  top: 0%;
-  left: 35%;
-  opacity:0%;
-  
-}
-.lastTime{
-  position: absolute;
-  font-size: 1.6rem;
-  color: green;
-  cursor: default;
 }
 
 .alert-wrapper {
