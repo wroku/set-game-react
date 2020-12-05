@@ -166,7 +166,7 @@ class CustomAlert extends React.Component {
       'hidden': !(this.props.success || this.props.failedAttempt || this.props.noSetFail)
     });
     const alertStatusClass = classNames({
-        'alert-relative': true,
+        'alert-absolute': true,
         'failedAttempt': this.props.failedAttempt,
         'success': this.props.success,
         'noSetFail': this.props.noSetFail,
@@ -315,7 +315,8 @@ function Table(props) {
 
 class SetGame extends React.Component {
 
-  /* failed attempts => hints used?  */
+  /* Deal with :active pseudoclass being replaced by :hover on mobile. Doesnt look good.
+  failed attempts => hints used?  */
 
   constructor(props){
     super(props);
@@ -724,7 +725,8 @@ class SetGame extends React.Component {
   
   alert() {
     this.setState({
-      finished: true});
+      finished: true,
+      stats: true});
   }
 
   render() {
@@ -742,14 +744,16 @@ class SetGame extends React.Component {
        </div>
        <Rules rules={this.state.rules}/>
        <Stats stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
+       <div className='afterStats'>
+          <CustomAlert success={this.state.finished} noSetFail={this.state.noSetFail} failedAttempt={this.state.failedAttempt} setsOnTable={this.countSets()} reload={this.reload} close={this.closeAlert}/>
+       </div>
        <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards} colours={this.colours} hintedCards={this.state.hintedCards} showTime={this.state.showTime} excludedFromScore={this.state.excludedFromScore}/>
-       <CustomAlert success={this.state.finished} noSetFail={this.state.noSetFail} failedAttempt={this.state.failedAttempt} setsOnTable={this.countSets()} reload={this.reload} close={this.closeAlert}/>
        <ShowTime show={this.state.showTime} time={this.state.successTimes[this.state.successTimes.length - 1]}/>
       
         <div className='debugInfo'>
           <button className='delete-cards-btn' onClick={this.removeCards}>Remove remaining cards.</button>
           <br/>
-          <button className='show-time-btn' onClick={this.showTime}>alert</button>
+          <button className='show-time-btn' onClick={this.alert}>alert</button>
           <span>{this.state.cardsToHint}</span>
           <br/>
           <span>Exc:{this.state.excludedFromScore}</span>
