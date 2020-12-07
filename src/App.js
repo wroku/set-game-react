@@ -79,6 +79,8 @@ class Stats extends React.Component {
 }
 
 class Title extends React.Component {
+
+  /* Svg title, randomly generated in SetGame component to form valid or invalid set, depending on the situation on the table */
   
   render() {
     const {cArr, sArr} = this.props.ncData;
@@ -138,6 +140,7 @@ class Title extends React.Component {
 }
 
 function ShowTime(props) {
+  /* Component responsible for showing animated guess time in seconds */
   
   const className = classNames({
     'time-wrapper': true,
@@ -315,8 +318,7 @@ function Table(props) {
 
 class SetGame extends React.Component {
 
-  /* Deal with :active pseudoclass being replaced by :hover on mobile. Doesnt look good.
-  failed attempts => hints used?  */
+  /* Main stateful component  */
 
   constructor(props){
     super(props);
@@ -354,6 +356,7 @@ class SetGame extends React.Component {
     this.reload = this.reload.bind(this);
     this.generateHint = this.generateHint.bind(this);
     
+    /* Debug only*/
     this.closeAlert = this.closeAlert.bind(this);
     this.removeCards = this.removeCards.bind(this);
     this.showTime = this.showTime.bind(this);
@@ -418,6 +421,7 @@ class SetGame extends React.Component {
 
   findValidSetsOnTable(){
     /* go through all possible combinations of cards on the table looking for valid sets.*/
+    
     const cards = this.state.cards.slice();
     const validSets = [];
     for (let i1 = 0; i1 < cards.length; i1++){
