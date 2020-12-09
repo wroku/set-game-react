@@ -1,0 +1,22 @@
+{
+  "records": [
+    {
+      "id": 1,
+      "player": "jaa",
+      "score": 12,
+      "time": 97.5
+    },
+    {
+      "id": 2,
+      "player": "Anon2",
+      "score": 1,
+      "time": 16.9
+    },
+    {
+      "id": 3,
+      "player": "Anon3",
+      "score": 6,
+      "time": 93.10000000000001
+    }
+  ]
+}

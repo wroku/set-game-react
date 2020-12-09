@@ -166,7 +166,7 @@ clear:both;
 }
 
 .debugInfo {
-  display: none;
+  display: inline;
 }
 
 .hinted {

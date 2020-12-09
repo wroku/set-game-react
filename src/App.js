@@ -47,9 +47,20 @@ class Stats extends React.Component {
     const lastTime = this.props.successTimes.length >= 1? this.props.successTimes[this.props.successTimes.length - 1] : '-';
     const bestTime = this.props.successTimes.length >= 1? Math.min(...this.props.successTimes) : '-';
     const avgTime = this.props.successTimes.length >= 1? Math.round((this.props.successTimes.reduce((x, y) => x + y) / this.props.successTimes.length)*10) / 10 : '-';
+    
+    const topScores = [];
+    for(let record of this.props.topScores){
+      topScores.push(
+        <div className='recordrow' key={record.id}>
+          {record.player}: &nbsp; {record.score} points in {record.time} seconds
+        </div>
+      )
+    }
+    
     return(
       <div className='stats'>
         <div className={className}>
+        {topScores}
           <div className='row'>
             <div className='column first'>
               <p>Score: </p>
@@ -150,9 +161,9 @@ function ShowTime(props) {
     <div className={className}>
       <div className='lastTime'>
         <span>
-          <svg width="0.8em" height="0.8em" viewBox="0 0 16 16" class="bi bi-clock" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm8-7A8 8 0 1 1 0 8a8 8 0 0 1 16 0z"/>
-            <path fill-rule="evenodd" d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z"/>
+          <svg width="0.8em" height="0.8em" viewBox="0 0 16 16" className="bi bi-clock" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path fillRule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm8-7A8 8 0 1 1 0 8a8 8 0 0 1 16 0z"/>
+            <path fillRule="evenodd" d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z"/>
           </svg>
           &nbsp;{props.time}s
         </span>
@@ -347,6 +358,8 @@ class SetGame extends React.Component {
       showTime: false,
       failedAttempt: false,
       noSetFail: false, 
+      topScores: [],
+      gameId: 0
     };
     
     this.toggleRules = this.toggleRules.bind(this);
@@ -356,11 +369,21 @@ class SetGame extends React.Component {
     this.reload = this.reload.bind(this);
     this.generateHint = this.generateHint.bind(this);
     
+    /* Leaderboard feature */
+    this.fetchLeaderboard = this.fetchLeaderboard.bind(this);
+    this.addGameToLeaderboard = this.addGameToLeaderboard.bind(this);
+    this.updateGameRecord = this.updateGameRecord.bind(this);
+    this.postExperiment = this.postExperiment.bind(this);
+
     /* Debug only*/
     this.closeAlert = this.closeAlert.bind(this);
     this.removeCards = this.removeCards.bind(this);
     this.showTime = this.showTime.bind(this);
     this.alert = this.alert.bind(this);
+    
+  }
+  componentDidMount(){
+    this.fetchLeaderboard();
   }
 
   reload(){
@@ -380,10 +403,95 @@ class SetGame extends React.Component {
       hintedCards:[],
       cardsToHint:[],
       excludedFromScore:[],
-      hintLvl:1,
+      hintLvl: 1,
       showTime: false,
       failedAttempt: false,
       noSetFail: false, 
+    });
+  }
+
+  postExperiment() {
+    const axios = require('axios');
+
+    axios.post('http://localhost:3000/records',{
+      id: 'lol',
+      player: `Anon`,
+      score: 5,
+      time: 66
+    })
+    .then(function(response){
+      console.log(`POSTRESP:${response}`);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+  }
+
+  fetchLeaderboard() {
+    const axios = require('axios');  
+    axios.get('http://localhost:3000/records')
+    .then((response) => {
+      // handle success
+      this.setState({
+        topScores: response.data
+      });
+      console.log(this.state.topScores);
+      console.log(response.data.length);
+    })
+    .catch(function (error) {
+      // handle error
+      console.log(error);
+    })
+    
+  }
+
+  addGameToLeaderboard() {
+    const axios = require('axios');
+    console.log('2');
+    this.fetchLeaderboard();
+    const currentId = this.state.topScores.length + 1;
+    
+    this.setState({
+      gameId: currentId
+    });
+    const currentScore = this.state.successTimes.length * 3 - this.state.fails.reduce((x,y) => x + y);
+    const totalTime = Math.round(this.state.successTimes.reduce((x,y) => x + y) * 10)/10;
+    
+    console.log(currentId);
+    console.log(currentScore);
+    console.log(totalTime);
+    console.log(`Anon${currentId}`);
+
+    axios.post('http://localhost:3000/records',{
+      id: currentId,
+      player: `Anon${currentId}`,
+      score: currentScore,
+      time: totalTime
+    })
+    .then(function(response){
+      console.log(`POSTRESP:${response}`);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+  }
+
+  updateGameRecord() {
+    const axios = require('axios');
+    const currentScore = this.state.successTimes.length * 3 - this.state.fails.reduce((x,y) => x + y);
+    const totalTime = Math.round(this.state.successTimes.reduce((x,y) => x + y) * 10)/10;
+    const currentId = this.state.gameId;
+    axios.put(`http://localhost:3000/records/${currentId}`,{
+      id: currentId,
+      player: `Anon${currentId}`,
+      score: currentScore,
+      time: totalTime
+    })
+    .then(function(response){
+      console.log(`PUTRESP:${response}`);
+    })
+    .catch(function (error) {
+      console.log(error);
     });
   }
 
@@ -456,7 +564,7 @@ class SetGame extends React.Component {
       if(this.state.hintLvl === 1){
         const cardsToHint = this.fisherYatesShuffle(this.fisherYatesShuffle(this.findValidSetsOnTable())[0]);
         this.setState({
-          cardsToHint: cardsToHint,
+          cardsToHint,
           excludedFromScore: cardsToHint[0]
         });
       }
@@ -477,7 +585,7 @@ class SetGame extends React.Component {
     const fails = this.state.fails.slice();
     fails.splice(-1, 1, fails[fails.length - 1] + 1);
     this.setState({
-      fails: fails
+      fails
       });
   }
 
@@ -492,7 +600,7 @@ class SetGame extends React.Component {
       selectedCards.splice(selectedCards.indexOf(ncss), 1);
     }
     this.setState({
-      selectedCards: selectedCards
+      selectedCards
     }, () => {
         if (selectedCards.length === this.noP){
               this.lastSelected();
@@ -507,10 +615,24 @@ class SetGame extends React.Component {
       const cards = this.state.cards.slice();
       let remainingCards = this.state.remainingCards.slice();
 
+      const fails = this.state.fails.slice();
+      fails.push(0);
+      this.setState({
+        fails: fails
+      },() => {
+        if (this.state.gameId === 0){
+        console.log('1');
+        this.addGameToLeaderboard();
+        }
+        else {
+          this.updateGameRecord();
+        }
+      });
+
+
       /* Usual game */
       if (remainingCards.length > 0) {
-        const fails = this.state.fails.slice();
-        fails.push(0);
+        
 
         if (cards.length > 12) {
           /* Just take selected set from table, returning to 12(or 15 if we were really unlucky before), 
@@ -532,7 +654,6 @@ class SetGame extends React.Component {
         setTimeout(() => this.setState({
           cards: cards,
           remainingCards: remainingCards,
-          fails: fails,
           noSetHint: false,
           hintedCards: [],
           cardsToHint: [],
@@ -547,28 +668,20 @@ class SetGame extends React.Component {
         for (const card of this.state.selectedCards) {
           cards.splice(cards.indexOf(card), 1);
         }
-
         setTimeout(() => this.setState({
           cards: cards
           },() => {
             this.generateTitle();
           }), 3000);
 
-        setTimeout(() => {
-          if (this.countSets() > 0){
-            const fails = this.state.fails.slice();
-            fails.push(0);
-            this.setState({
-              fails: fails
-            });
-          }
-          else {
+        if (this.countSets() === 0) {
+          setTimeout(() => {
             this.setState({
               finished: true,
               stats: true
             });
-          }
-        }, 3300);
+          }, 3300);
+        }
       }
       setTimeout(() => this.setState({selectedCards: []}), 3000)
     }
@@ -747,17 +860,20 @@ class SetGame extends React.Component {
          <button className='hint button' disabled={this.state.noSetHint || this.state.hintedCards.length > 0} onClick={this.generateHint}>Hint</button>
        </div>
        <Rules rules={this.state.rules}/>
-       <Stats stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
+       <Stats topScores={this.state.topScores} stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
        <div className='afterStats'>
           <CustomAlert success={this.state.finished} noSetFail={this.state.noSetFail} failedAttempt={this.state.failedAttempt} setsOnTable={this.countSets()} reload={this.reload} close={this.closeAlert}/>
        </div>
        <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards} colours={this.colours} hintedCards={this.state.hintedCards} showTime={this.state.showTime} excludedFromScore={this.state.excludedFromScore}/>
        <ShowTime show={this.state.showTime} time={this.state.successTimes[this.state.successTimes.length - 1]}/>
-      
+        
+        
         <div className='debugInfo'>
+        
           <button className='delete-cards-btn' onClick={this.removeCards}>Remove remaining cards.</button>
           <br/>
-          <button className='show-time-btn' onClick={this.alert}>alert</button>
+          <button className='show-time-btn' onClick={this.fetchLeaderboard}>FETCH</button>
+          <button onClick={this.postExperiment}>POST</button>
           <span>{this.state.cardsToHint}</span>
           <br/>
           <span>Exc:{this.state.excludedFromScore}</span>
