@@ -48,19 +48,30 @@ class Stats extends React.Component {
     const bestTime = this.props.successTimes.length >= 1? Math.min(...this.props.successTimes) : '-';
     const avgTime = this.props.successTimes.length >= 1? Math.round((this.props.successTimes.reduce((x, y) => x + y) / this.props.successTimes.length)*10) / 10 : '-';
     
-    const topScores = [];
-    for(let record of this.props.topScores){
-      topScores.push(
-        <div className='recordrow' key={record.id}>
-          {record.player}: &nbsp; {record.score} points in {record.time} seconds
-        </div>
-      )
+    const topScores = [
+      <tr className='titlerow' key='titlerow'>
+          <th>#</th><th>Player</th> <th>Score</th> <th>Time</th>
+      </tr>
+    ];
+    if (this.props.topScores.length > 0){
+      for(let i = 0; i < this.props.topScores.length; i ++){
+        let record = this.props.topScores[i];
+        topScores.push(
+          <tr className='recordrow' key={record.key}>
+            <th>{i + 1}</th><th>{record.player}</th> <th>{record.score}</th> <th>{record.time}s</th>
+          </tr>
+        )
+    } 
     }
+   
     
     return(
       <div className='stats'>
         <div className={className}>
-        {topScores}
+          <table className="topScoreTable">
+            {topScores}
+          </table>
+        
           <div className='row'>
             <div className='column first'>
               <p>Score: </p>
@@ -382,6 +393,7 @@ class SetGame extends React.Component {
     this.alert = this.alert.bind(this);
     
   }
+  
   componentDidMount(){
     this.fetchLeaderboard();
   }
@@ -413,8 +425,8 @@ class SetGame extends React.Component {
   postExperiment() {
     const axios = require('axios');
 
-    axios.post('http://localhost:3000/records',{
-      id: 'lol',
+    axios.post('http://127.0.0.1:8000/records/',{
+      id: 3,
       player: `Anon`,
       score: 5,
       time: 66
@@ -427,16 +439,18 @@ class SetGame extends React.Component {
     });
   }
 
-  fetchLeaderboard() {
+  fetchLeaderboard(callback) {
     const axios = require('axios');  
-    axios.get('http://localhost:3000/records')
+    axios.get('https://consp8.deta.dev/records/?top=5')
     .then((response) => {
       // handle success
       this.setState({
         topScores: response.data
+      }, () => {
+        if(typeof callback == 'function') {
+          callback();
+        }
       });
-      console.log(this.state.topScores);
-      console.log(response.data.length);
     })
     .catch(function (error) {
       // handle error
@@ -447,29 +461,20 @@ class SetGame extends React.Component {
 
   addGameToLeaderboard() {
     const axios = require('axios');
-    console.log('2');
-    this.fetchLeaderboard();
-    const currentId = this.state.topScores.length + 1;
     
-    this.setState({
-      gameId: currentId
-    });
     const currentScore = this.state.successTimes.length * 3 - this.state.fails.reduce((x,y) => x + y);
     const totalTime = Math.round(this.state.successTimes.reduce((x,y) => x + y) * 10)/10;
     
-    console.log(currentId);
-    console.log(currentScore);
-    console.log(totalTime);
-    console.log(`Anon${currentId}`);
-
-    axios.post('http://localhost:3000/records',{
-      id: currentId,
-      player: `Anon${currentId}`,
+    axios.post('https://consp8.deta.dev/records/',{
+      player: "Anonym",
       score: currentScore,
       time: totalTime
     })
-    .then(function(response){
-      console.log(`POSTRESP:${response}`);
+    .then((response) => {
+      console.log(response);
+      this.setState({
+        gameId: response.data['key']
+      });
     })
     .catch(function (error) {
       console.log(error);
@@ -481,14 +486,14 @@ class SetGame extends React.Component {
     const currentScore = this.state.successTimes.length * 3 - this.state.fails.reduce((x,y) => x + y);
     const totalTime = Math.round(this.state.successTimes.reduce((x,y) => x + y) * 10)/10;
     const currentId = this.state.gameId;
-    axios.put(`http://localhost:3000/records/${currentId}`,{
-      id: currentId,
-      player: `Anon${currentId}`,
+    axios.put(`https://consp8.deta.dev/records/${currentId}`,{
+      
+      player: `Anonym`,
       score: currentScore,
       time: totalTime
     })
     .then(function(response){
-      console.log(`PUTRESP:${response}`);
+      console.log(response);
     })
     .catch(function (error) {
       console.log(error);
@@ -621,14 +626,13 @@ class SetGame extends React.Component {
         fails: fails
       },() => {
         if (this.state.gameId === 0){
-        console.log('1');
-        this.addGameToLeaderboard();
+          /* Add new record after fetching actual leaderboard */
+          this.fetchLeaderboard(this.addGameToLeaderboard);
         }
         else {
           this.updateGameRecord();
         }
       });
-
 
       /* Usual game */
       if (remainingCards.length > 0) {

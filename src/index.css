@@ -323,6 +323,14 @@ footer {
 .alert-additional {
   font-size: 0.9rem;
 }
+.topScoreTable{
+  font-size: 0.9rem;
+  width: 80%;
+}
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
 
 @media only screen and (min-device-width: 450px) {
   #root {
