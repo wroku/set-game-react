@@ -3,7 +3,6 @@ import React from 'react';
 import classNames from 'classnames';
 
 
-
 class Rules extends React.Component {
   
   render() {
@@ -56,8 +55,7 @@ class Stats extends React.Component {
     const lastTime = this.props.successTimes.length >= 1? this.props.successTimes[this.props.successTimes.length - 1] : '-';
     const bestTime = this.props.successTimes.length >= 1? Math.min(...this.props.successTimes) : '-';
     const avgTime = this.props.successTimes.length >= 1? Math.round((this.props.successTimes.reduce((x, y) => x + y) / this.props.successTimes.length)*10) / 10 : '-';
-    let content;
-
+    
     const topScores = [
       <tr className='titlerow' key='titlerow'>
           <th>#</th><th>Player</th> <th>Score</th> <th>Time</th>
@@ -69,7 +67,7 @@ class Stats extends React.Component {
         let record = this.props.topScores[i];
         topScores.push(
           <tr className='recordrow' key={record.key}>
-            <th>{i + 1}</th><th>{record.player}</th> <th>{record.score}</th> <th>{record.time}s</th>
+            <th>{i + 1}</th><td>{record.player}</td> <td>{record.score}</td> <td>{record.time} s</td>
           </tr>
         )
       } 
@@ -80,6 +78,7 @@ class Stats extends React.Component {
 
       <div className='stats'>
         <div className={className}>
+
           <div className={classNameCurrent}>
             <div className='row'>
               <div className='column first'>
@@ -104,11 +103,13 @@ class Stats extends React.Component {
               </div>
             </div>
           </div>
+
           <div className={classNameBest}>
             <table className="topScoreTable">
               {topScores}
             </table>
           </div>
+
         </div>
       </div>
     );
@@ -402,7 +403,6 @@ class SetGame extends React.Component {
     this.fetchLeaderboard = this.fetchLeaderboard.bind(this);
     this.addGameToLeaderboard = this.addGameToLeaderboard.bind(this);
     this.updateGameRecord = this.updateGameRecord.bind(this);
-    this.postExperiment = this.postExperiment.bind(this);
 
     /* Debug only*/
     this.closeAlert = this.closeAlert.bind(this);
@@ -443,26 +443,9 @@ class SetGame extends React.Component {
     });
   }
 
-  postExperiment() {
-    const axios = require('axios');
-
-    axios.post('http://127.0.0.1:8000/records/',{
-      id: 3,
-      player: `Anon`,
-      score: 5,
-      time: 66
-    })
-    .then(function(response){
-      console.log(`POSTRESP:${response}`);
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
-  }
-
   fetchLeaderboard(callback) {
     const axios = require('axios');  
-    axios.get('https://consp8.deta.dev/records/?top=5')
+    axios.get('https://consp8.deta.dev/records/?top=3')
     .then((response) => {
       // handle success
       this.setState({
@@ -893,10 +876,10 @@ class SetGame extends React.Component {
          <button className={!this.state.noSetHint? 'noSet button long': 'noSet-hint button long'} onClick={this.checkIfSetOnTable}>There is no SET!</button>
          
           <button className={!this.state.stats? 'toggle-stats button' : 'toggle-stats-selected button'} onClick={this.toggleStats}>{!this.state.stats? 'Show stats' : 'Hide stats'}</button>
-          <div className={!this.state.stats? 'hidden': 'x'}>
-            <div className='y'>
-              <button className={!this.state.leaderboard ? "one chosen" : "one"} onClick={this.turnOffLeaderboard}>your</button>
-              <button className={this.state.leaderboard ? "two chosen" : "two"} onClick={this.turnOnLeaderboard}>best</button>
+          <div className={!this.state.stats? 'hidden': 'tab-buttons-wrapper'}>
+            <div className='tab-buttons'>
+              <button className={!this.state.leaderboard ? "current-btn chosen" : "current-btn"} onClick={this.turnOffLeaderboard}>your</button>
+              <button className={this.state.leaderboard ? "leaderboard-btn chosen" : "leaderboard-btn"} onClick={this.turnOnLeaderboard}>best</button>
             </div>
           </div>
          
@@ -917,7 +900,6 @@ class SetGame extends React.Component {
           <button className='delete-cards-btn' onClick={this.removeCards}>Remove remaining cards.</button>
           <br/>
           <button className='show-time-btn' onClick={this.fetchLeaderboard}>FETCH</button>
-          <button onClick={this.postExperiment}>POST</button>
           <span>{this.state.cardsToHint}</span>
           <br/>
           <span>Exc:{this.state.excludedFromScore}</span>
