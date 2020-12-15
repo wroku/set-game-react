@@ -42,17 +42,28 @@ class Stats extends React.Component {
       'details': true,
       'hidden': !this.props.stats
     });
+    const classNameCurrent = classNames({
+      'currentStatrs': true,
+      'hidden': this.props.leaderboard
+    });
+    const classNameBest = classNames({
+      'leaderboard': true,
+      'hidden': !this.props.leaderboard
+    });
+
     const failedAttempts = this.props.fails.reduce((x,y) => x + y);
     const score = this.props.successTimes.length * 3 - failedAttempts;
     const lastTime = this.props.successTimes.length >= 1? this.props.successTimes[this.props.successTimes.length - 1] : '-';
     const bestTime = this.props.successTimes.length >= 1? Math.min(...this.props.successTimes) : '-';
     const avgTime = this.props.successTimes.length >= 1? Math.round((this.props.successTimes.reduce((x, y) => x + y) / this.props.successTimes.length)*10) / 10 : '-';
-    
+    let content;
+
     const topScores = [
       <tr className='titlerow' key='titlerow'>
           <th>#</th><th>Player</th> <th>Score</th> <th>Time</th>
       </tr>
     ];
+
     if (this.props.topScores.length > 0){
       for(let i = 0; i < this.props.topScores.length; i ++){
         let record = this.props.topScores[i];
@@ -61,38 +72,42 @@ class Stats extends React.Component {
             <th>{i + 1}</th><th>{record.player}</th> <th>{record.score}</th> <th>{record.time}s</th>
           </tr>
         )
-    } 
+      } 
     }
-   
+
     
     return(
+
       <div className='stats'>
         <div className={className}>
-          <table className="topScoreTable">
-            {topScores}
-          </table>
-        
-          <div className='row'>
-            <div className='column first'>
-              <p>Score: </p>
-              <p>Remaining cards: </p>
-              <p>Failed attempts: </p>
+          <div className={classNameCurrent}>
+            <div className='row'>
+              <div className='column first'>
+                <p>Score: </p>
+                <p>Remaining cards: </p>
+                <p>Failed attempts: </p>
+              </div>
+              <div className='column values1'>
+                <p>{score}</p>
+                <p>{this.props.remainingCards.length}</p>
+                <p>{failedAttempts}</p>
+              </div>
+              <div className='column second'>
+                <p>Last time:</p>
+                <p>Best time:</p>
+                <p>Average time:</p>
+              </div>
+              <div className='column values2'>
+                <p>{lastTime}</p>
+                <p>{bestTime}</p>
+                <p>{avgTime}</p>
+              </div>
             </div>
-            <div className='column values1'>
-              <p>{score}</p>
-              <p>{this.props.remainingCards.length}</p>
-              <p>{failedAttempts}</p>
-            </div>
-            <div className='column second'>
-              <p>Last time:</p>
-              <p>Best time:</p>
-              <p>Average time:</p>
-            </div>
-            <div className='column values2'>
-              <p>{lastTime}</p>
-              <p>{bestTime}</p>
-              <p>{avgTime}</p>
-            </div>
+          </div>
+          <div className={classNameBest}>
+            <table className="topScoreTable">
+              {topScores}
+            </table>
           </div>
         </div>
       </div>
@@ -353,6 +368,7 @@ class SetGame extends React.Component {
     this.state = {
       rules: false,
       stats: false,
+      leaderboard: false,
       finished: false,
       startTime: new Date(),
       successTimes: [],
@@ -375,6 +391,8 @@ class SetGame extends React.Component {
     
     this.toggleRules = this.toggleRules.bind(this);
     this.toggleStats = this.toggleStats.bind(this);
+    this.turnOnLeaderboard = this.turnOnLeaderboard.bind(this);
+    this.turnOffLeaderboard = this.turnOffLeaderboard.bind(this);
     this.selectCard = this.selectCard.bind(this);
     this.checkIfSetOnTable = this.checkIfSetOnTable.bind(this);
     this.reload = this.reload.bind(this);
@@ -403,6 +421,7 @@ class SetGame extends React.Component {
     this.setState({
       rules: false,
       stats: false,
+      leaderboard: false,
       finished: false,
       startTime: new Date(),
       successTimes: [],
@@ -418,7 +437,9 @@ class SetGame extends React.Component {
       hintLvl: 1,
       showTime: false,
       failedAttempt: false,
-      noSetFail: false, 
+      noSetFail: false,
+      topScores: [],
+      gameId: 0 
     });
   }
 
@@ -723,7 +744,18 @@ class SetGame extends React.Component {
   toggleStats() {
     this.setState({
       stats: !this.state.stats,
-      rules:false
+      rules: false
+    });
+  }
+
+  turnOnLeaderboard() {
+    this.setState({
+      leaderboard: true,
+    });
+  }
+  turnOffLeaderboard() {
+    this.setState({
+      leaderboard: false,
     });
   }
 
@@ -859,12 +891,20 @@ class SetGame extends React.Component {
          <button className={!this.state.rules? 'toggle-rules button' : 'toggle-rules-selected button'} onClick={this.toggleRules}>{!this.state.rules? 'Show rules' : 'Hide rules'}</button>
          <button className={!this.state.noSetHint? 'noSet button short': 'noSet-hint button short'} onClick={this.checkIfSetOnTable}>No set!</button>
          <button className={!this.state.noSetHint? 'noSet button long': 'noSet-hint button long'} onClick={this.checkIfSetOnTable}>There is no SET!</button>
-         <button className={!this.state.stats? 'toggle-stats button' : 'toggle-stats-selected button'} onClick={this.toggleStats}>{!this.state.stats? 'Show stats' : 'Hide stats'}</button>
+         
+          <button className={!this.state.stats? 'toggle-stats button' : 'toggle-stats-selected button'} onClick={this.toggleStats}>{!this.state.stats? 'Show stats' : 'Hide stats'}</button>
+          <div className={!this.state.stats? 'hidden': 'x'}>
+            <div className='y'>
+              <button className={!this.state.leaderboard ? "one chosen" : "one"} onClick={this.turnOffLeaderboard}>your</button>
+              <button className={this.state.leaderboard ? "two chosen" : "two"} onClick={this.turnOnLeaderboard}>best</button>
+            </div>
+          </div>
+         
          <button className='reload button' onClick={this.reload}>Reload</button>
          <button className='hint button' disabled={this.state.noSetHint || this.state.hintedCards.length > 0} onClick={this.generateHint}>Hint</button>
        </div>
        <Rules rules={this.state.rules}/>
-       <Stats topScores={this.state.topScores} stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
+       <Stats leaderboard={this.state.leaderboard} topScores={this.state.topScores} stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
        <div className='afterStats'>
           <CustomAlert success={this.state.finished} noSetFail={this.state.noSetFail} failedAttempt={this.state.failedAttempt} setsOnTable={this.countSets()} reload={this.reload} close={this.closeAlert}/>
        </div>

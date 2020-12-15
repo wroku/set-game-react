@@ -69,6 +69,10 @@ h1 {
   margin-right: 0.3rem;
 }
 
+.topScoreTable {
+  margin: 2rem auto 2rem auto;
+}
+
 .title-wrapper {
   margin-bottom:2rem;
 }
@@ -99,6 +103,8 @@ h1 {
 .toggle-stats-selected {
   border: 2px solid #7f20d8;
   background-color: #7f20d8;
+  border-bottom-color: black;
+  border-radius:4px 4px 0 0;
   color: white;
 }
 
@@ -347,7 +353,7 @@ table, th, td {
   }
 
   .selected {
-    border-width: 4px;
+    border-width: 5px;
   }
 
   .button {
@@ -583,5 +589,30 @@ table, th, td {
   }
 }
 
+.x {
+  position:relative;
+  display:inline;
+}
+.y {
+  position:absolute;
+  left: -117px;
+  top:27px;
+}
+.one, .two{
+  width: 54px;
+  display:inline;
+  border-radius: 0 0 3px 3px;
+  border-width: 1px;
+  border-top-width:0px;
+  border-color: #7f20d8;
+  background-color: white;
+  
+}
+.one {
+  margin-left: 1px;
+}
 
-
+.chosen, .one:hover, .two:hover {
+  background-color: #7f20d8;
+  color:#FFFFFF;
+}
