@@ -73,7 +73,6 @@ class Stats extends React.Component {
       } 
     }
 
-    
     return(
 
       <div className='stats'>
@@ -204,13 +203,14 @@ class CustomAlert extends React.Component {
   render() {
     const alertWrapperClass = classNames({
       'alert-wrapper': true,
-      'hidden': !(this.props.success || this.props.failedAttempt || this.props.noSetFail)
+      'hidden': !(this.props.success || this.props.failedAttempt || this.props.noSetFail || this.props.playerPrompt)
     });
     const alertStatusClass = classNames({
         'alert-absolute': true,
         'failedAttempt': this.props.failedAttempt,
         'success': this.props.success,
         'noSetFail': this.props.noSetFail,
+        'nicknamePrompt': !this.props.success && this.props.playerPrompt
       });
 
     let infoMain, infoAdd;
@@ -223,12 +223,21 @@ class CustomAlert extends React.Component {
       infoMain = this.props.setsOnTable === 1 ? 'There is exactly one valid set on the table.' : `There are ${this.props.setsOnTable} valid sets on table.`;
       infoAdd = `If you are not sure whether to use No Set button, take a good look on the current title. Letters forming proper 'set' indicate presence of valid set on he table.`
     }
+    else if (this.props.playerPrompt) {
+      /* Clicking OK button should also in this case update game record with new player name, because this prompt can be displayed after last selected set */
+      infoMain = `Provide your nickname:`
+      infoAdd = <form>
+                    <input className='name-input' type="text" maxlength="64" value={this.props.playerNickname} onChange={this.props.handlePlayerChange} />
+                </form>
+      button = <button className="alert-btn" onClick={() => {this.props.close(); this.props.updateGameRecord();}}>OK</button>  
+
+    }
     else if (this.props.success){
       infoMain = `Congratulations!`
       infoAdd = 'You can see your stats above. Good job!'
       button = <button className="alert-btn" onClick={this.props.reload}>PLAY AGAIN</button>
+    } 
     
-    }
     return(
       <div className={alertWrapperClass}>
 				<div className={alertStatusClass}>
@@ -361,6 +370,7 @@ class SetGame extends React.Component {
   constructor(props){
     super(props);
     this.noP = 3;
+    this.leaderboardGuessesTreshold = 3;
     this.colours = {'0': 'red',
                     '1': 'green',
                     '2': 'darkviolet'};
@@ -385,24 +395,27 @@ class SetGame extends React.Component {
       hintLvl: 1,
       showTime: false,
       failedAttempt: false,
-      noSetFail: false, 
-      topScores: [],
-      gameId: 0
+      noSetFail: false,
+      topScores: [], 
+      gameId: 0,
+      playerPrompt: false,
+      playerNickname: ''
     };
     
     this.toggleRules = this.toggleRules.bind(this);
     this.toggleStats = this.toggleStats.bind(this);
-    this.turnOnLeaderboard = this.turnOnLeaderboard.bind(this);
-    this.turnOffLeaderboard = this.turnOffLeaderboard.bind(this);
     this.selectCard = this.selectCard.bind(this);
     this.checkIfSetOnTable = this.checkIfSetOnTable.bind(this);
     this.reload = this.reload.bind(this);
     this.generateHint = this.generateHint.bind(this);
     
-    /* Leaderboard feature */
+    /* Leaderboard feature related */
     this.fetchLeaderboard = this.fetchLeaderboard.bind(this);
     this.addGameToLeaderboard = this.addGameToLeaderboard.bind(this);
     this.updateGameRecord = this.updateGameRecord.bind(this);
+    this.handlePlayerChange = this.handlePlayerChange.bind(this);
+    this.turnOnLeaderboard = this.turnOnLeaderboard.bind(this);
+    this.turnOffLeaderboard = this.turnOffLeaderboard.bind(this);
 
     /* Debug only*/
     this.closeAlert = this.closeAlert.bind(this);
@@ -439,8 +452,10 @@ class SetGame extends React.Component {
       failedAttempt: false,
       noSetFail: false,
       topScores: [],
-      gameId: 0 
+      gameId: 0,
+      playerPrompt: false,
     });
+    this.fetchLeaderboard();
   }
 
   fetchLeaderboard(callback) {
@@ -468,9 +483,9 @@ class SetGame extends React.Component {
     
     const currentScore = this.state.successTimes.length * 3 - this.state.fails.reduce((x,y) => x + y);
     const totalTime = Math.round(this.state.successTimes.reduce((x,y) => x + y) * 10)/10;
-    
+    const nickname = !this.state.playerNickname ? 'Anonym' : this.state.playerNickname;
     axios.post('https://consp8.deta.dev/records/',{
-      player: "Anonym",
+      player: nickname,
       score: currentScore,
       time: totalTime
     })
@@ -490,9 +505,11 @@ class SetGame extends React.Component {
     const currentScore = this.state.successTimes.length * 3 - this.state.fails.reduce((x,y) => x + y);
     const totalTime = Math.round(this.state.successTimes.reduce((x,y) => x + y) * 10)/10;
     const currentId = this.state.gameId;
+    const nickname = !this.state.playerNickname ? 'Anonym' : this.state.playerNickname;
+
     axios.put(`https://consp8.deta.dev/records/${currentId}`,{
       
-      player: `Anonym`,
+      player: nickname,
       score: currentScore,
       time: totalTime
     })
@@ -629,11 +646,10 @@ class SetGame extends React.Component {
       this.setState({
         fails: fails
       },() => {
-        if (this.state.gameId === 0){
-          /* Add new record after fetching actual leaderboard */
-          this.fetchLeaderboard(this.addGameToLeaderboard);
+        if (this.state.successTimes.length === this.leaderboardGuessesTreshold){
+          this.addGameToLeaderboard();
         }
-        else {
+        else if (this.state.successTimes.length > this.leaderboardGuessesTreshold) {
           this.updateGameRecord();
         }
       });
@@ -641,7 +657,6 @@ class SetGame extends React.Component {
       /* Usual game */
       if (remainingCards.length > 0) {
         
-
         if (cards.length > 12) {
           /* Just take selected set from table, returning to 12(or 15 if we were really unlucky before), 
           do not deal 3 more and leave remainingCards be*/
@@ -680,16 +695,17 @@ class SetGame extends React.Component {
           cards: cards
           },() => {
             this.generateTitle();
+            if (this.countSets() === 0) {
+              /* CustomAlert component is designed to display first playerPrompt, then endgame congrats */
+              this.setState({
+                playerPrompt: this.state.playerNickname === '' ? true: false,
+                finished: true,
+                stats: true,
+                leaderboard: false
+              });
+            }  
           }), 3000);
-
-        if (this.countSets() === 0) {
-          setTimeout(() => {
-            this.setState({
-              finished: true,
-              stats: true
-            });
-          }, 3300);
-        }
+        
       }
       setTimeout(() => this.setState({selectedCards: []}), 3000)
     }
@@ -841,7 +857,15 @@ class SetGame extends React.Component {
   closeAlert() {
     this.setState({
       failedAttempt: false,
-      noSetFail: false});
+      noSetFail: false, 
+      playerPrompt: false
+    });
+  }
+
+  handlePlayerChange(event) {
+    this.setState({
+      playerNickname: event.target.value
+    });  
   }
 
   /*debug functions*/
@@ -861,8 +885,9 @@ class SetGame extends React.Component {
   
   alert() {
     this.setState({
-      finished: true,
-      stats: true});
+      playerPrompt:true,
+      stats: true,
+      leaderboard: false});
   }
 
   render() {
@@ -889,7 +914,10 @@ class SetGame extends React.Component {
        <Rules rules={this.state.rules}/>
        <Stats leaderboard={this.state.leaderboard} topScores={this.state.topScores} stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
        <div className='afterStats'>
-          <CustomAlert success={this.state.finished} noSetFail={this.state.noSetFail} failedAttempt={this.state.failedAttempt} setsOnTable={this.countSets()} reload={this.reload} close={this.closeAlert}/>
+          <CustomAlert playerPrompt={this.state.playerPrompt} playerNickname={this.state.playerNickname} handlePlayerChange={this.handlePlayerChange} handlePlayerSubmit={this.handlePlayerSubmit} success={this.state.finished} noSetFail={this.state.noSetFail} failedAttempt={this.state.failedAttempt} setsOnTable={this.countSets()} reload={this.reload} close={this.closeAlert} updateGameRecord={this.updateGameRecord}/>
+       </div>
+       <div className={this.state.successTimes.length < 5 && this.state.successTimes.length > 2 && this.state.playerNickname === ''? 'encouraging-info' : 'hidden'}>
+         Your game is now qualified for the leaderboard. <b>Keep going!</b> You can <span className='enter-button' onClick={() => this.setState({playerPrompt: true})}>enter</span> your name now or after finishing whole deck.
        </div>
        <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards} colours={this.colours} hintedCards={this.state.hintedCards} showTime={this.state.showTime} excludedFromScore={this.state.excludedFromScore}/>
        <ShowTime show={this.state.showTime} time={this.state.successTimes[this.state.successTimes.length - 1]}/>
@@ -899,12 +927,14 @@ class SetGame extends React.Component {
         
           <button className='delete-cards-btn' onClick={this.removeCards}>Remove remaining cards.</button>
           <br/>
-          <button className='show-time-btn' onClick={this.fetchLeaderboard}>FETCH</button>
+          <button className='show-time-btn' onClick={this.alert}>Alert</button>
           <span>{this.state.cardsToHint}</span>
           <br/>
-          <span>Exc:{this.state.excludedFromScore}</span>
+          <span>Player:{this.state.playerNickname}</span>
           <br/>
           <span>Sel:{this.state.selectedCards}</span>
+          <br/>
+          <span>Id:{this.state.gameId}</span>
         </div>
       </div>
     );
@@ -912,3 +942,5 @@ class SetGame extends React.Component {
 }
 
 export default SetGame;
+
+/*Prompt for name. Maybe autogenerated proposition + funcion in api to chceck for taken */

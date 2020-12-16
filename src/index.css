@@ -369,6 +369,29 @@ footer {
 .noSetFail {
   background-color:  #d82020;
 }
+
+.nicknamePrompt {
+  background-color:  yellowgreen;
+}
+
+.name-input {
+  width: 200px;
+}
+
+.enter-button {
+  color:green;
+  text-decoration: underline;
+}
+
+.enter-button:hover {
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.encouraging-info {
+  margin-left: 1rem;
+}
+
 .alert-main {
   font-size: 1.3rem;
 }
