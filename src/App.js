@@ -15,6 +15,7 @@ class SetGame extends React.Component {
     super(props);
     this.noP = 3;
     this.leaderboardGuessesTreshold = 3;
+    this.animationTimeFactor = 1;
     this.colours = {'0': 'red',
                     '1': 'green',
                     '2': 'darkviolet'};
@@ -228,7 +229,7 @@ class SetGame extends React.Component {
       this.setState({
         noSetHint: true
       });
-      setTimeout(() => this.setState({noSetHint: false}), 3000);
+      setTimeout(() => this.setState({noSetHint: false}), 3000 * this.animationTimeFactor);
     }
     else {
       if(this.state.hintLvl === 1){
@@ -246,10 +247,10 @@ class SetGame extends React.Component {
       
 
       for (let i = 0; i < this.state.hintLvl; i++){
-        setTimeout(() => this.setState({hintedCards: this.state.cardsToHint.slice(0, i+1)}), i*500);
+        setTimeout(() => this.setState({hintedCards: this.state.cardsToHint.slice(0, i+1)}), (i*500)*this.animationTimeFactor);
       }
       const delay = (this.state.hintLvl - 1) * 500;
-      setTimeout(() => this.setState({hintedCards: []}), 3000 + delay);
+      setTimeout(() => this.setState({hintedCards: []}), (3000 + delay) * this.animationTimeFactor);
       this.setState((state) => ({hintLvl: state.hintLvl === 3 ? 1: state.hintLvl + 1}));
     }
     const fails = this.state.fails.slice();
@@ -327,7 +328,7 @@ class SetGame extends React.Component {
           hintLvl: 1
         }, () => {
           this.generateTitle();
-        }), 3000);
+        }), 3000 * this.animationTimeFactor);
       }
 
       /* Near finish part */
@@ -348,10 +349,10 @@ class SetGame extends React.Component {
                 leaderboard: false
               });
             }  
-          }), 3000);
+          }), 3000 * this.animationTimeFactor);
         
       }
-      setTimeout(() => this.setState({selectedCards: []}), 3000)
+      setTimeout(() => this.setState({selectedCards: []}), 3000 * this.animationTimeFactor)
     }
     else {
       const fails = this.state.fails.slice();
@@ -427,11 +428,17 @@ class SetGame extends React.Component {
     }
   }
 
-  calculateElapsed (){
+  calculateElapsed () {
     const stop = new Date();
     const successTimes = this.state.successTimes.slice();
     const elapsed = (stop.getTime() - this.state.startTime.getTime())/1000;
-    successTimes.push(Math.round(elapsed * 10)/10);
+    if (successTimes.length > 0) {
+      /*compensate for animations delaying new deal */
+      successTimes.push(Math.round(elapsed * 10)/10 - 3 * this.animationTimeFactor);
+    } 
+    else {
+      successTimes.push(Math.round(elapsed * 10)/10)
+    }
     this.setState ({
       successTimes: successTimes,
       startTime: new Date()
@@ -524,7 +531,7 @@ class SetGame extends React.Component {
     this.setState({
       showTime: true
     });
-    setTimeout(() => this.setState({showTime: false}), 4000);
+    setTimeout(() => this.setState({showTime: false}), 4000 * this.animationTimeFactor);
   }
   
   alert() {

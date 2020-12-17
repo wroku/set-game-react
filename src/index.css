@@ -1,3 +1,7 @@
+:root {
+  --animationTimeFactor: 1;
+}
+
 body {
   width: 99%;
   margin: 0 auto;
@@ -175,7 +179,7 @@ th, td {
 
 .noSet-hint {
   animation-name: noSetHint;
-  animation-duration: 3s;
+  animation-duration: calc(3s * var(--animationTimeFactor));
 }
 
 .reload{
@@ -224,7 +228,7 @@ th, td {
 
 .hinted {
   animation-name: hint;
-  animation-duration: 4s;
+  animation-duration: calc(4s * var(--animationTimeFactor));
 }
 
 @keyframes hint {
@@ -261,7 +265,7 @@ footer {
 
 .animate {
   animation:scoresUp;
-  animation-duration: 3s;
+  animation-duration: calc(3s * var(--animationTimeFactor));
 }
 
 @keyframes scoresUp {
@@ -290,7 +294,7 @@ footer {
 
 .show {
   animation-name: timeFlies;
-  animation-duration: 5s;
+  animation-duration: calc(3s * var(--animationTimeFactor));
 }
 
 @keyframes timeFlies {
