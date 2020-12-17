@@ -1,367 +1,11 @@
-import './App.css';
 import React from 'react';
-import classNames from 'classnames';
+import Title from './components/Title';
+import Rules from './components/Rules';
+import Stats from './components/Stats';
+import Table from './components/Table';
+import {CustomAlert, ShowTime} from './components/DisplayHelpers'; 
+import Footer from './components/Footer';
 
-
-class Rules extends React.Component {
-  
-  render() {
-    const className = classNames({
-      'info': true,
-      'hidden': !this.props.rules
-    });
-
-    return(
-      <div className='rules'>
-        <div className={className}>
-          <div className='important'>
-        Try to find and select cards forming a set.
-        A set consists of <b>3 cards satisfying all of these conditions:</b>
-        <ul>
-          <li>They all have the same number or have three different numbers.</li>
-          <li>They all have the same shape or have three different shapes.</li>
-          <li>They all have the same shading or have three different shadings.</li>
-          <li>They all have the same color or have three different colors.</li>
-        </ul>
-        </div>
-        For example, letters S, E and T have diffrent shapes and each of these occurs only once in the title above.
-        Their colours and shadings also satisfies our conditions. At least on the first deal, later - it depends...
-        What brings us to the last matter - if you think that there is no set on the table you can ask for 3 additional cards using red button.
-        More info on <a href='https://en.wikipedia.org/wiki/Set_(card_game)'>Wikipedia</a>. 
-        </div>
-      </div>
-    );
-  }
-}
-
-class Stats extends React.Component {
-
-  render(){
-    const className = classNames({
-      'details': true,
-      'hidden': !this.props.stats
-    });
-    const classNameCurrent = classNames({
-      'currentStatrs': true,
-      'hidden': this.props.leaderboard
-    });
-    const classNameBest = classNames({
-      'leaderboard': true,
-      'hidden': !this.props.leaderboard
-    });
-
-    const failedAttempts = this.props.fails.reduce((x,y) => x + y);
-    const score = this.props.successTimes.length * 3 - failedAttempts;
-    const lastTime = this.props.successTimes.length >= 1? this.props.successTimes[this.props.successTimes.length - 1] : '-';
-    const bestTime = this.props.successTimes.length >= 1? Math.min(...this.props.successTimes) : '-';
-    const avgTime = this.props.successTimes.length >= 1? Math.round((this.props.successTimes.reduce((x, y) => x + y) / this.props.successTimes.length)*10) / 10 : '-';
-    
-    const topScores = [
-      <tr className='titlerow' key='titlerow'>
-          <th>#</th><th>Player</th> <th>Score</th> <th>Time</th>
-      </tr>
-    ];
-
-    if (this.props.topScores.length > 0){
-      for(let i = 0; i < this.props.topScores.length; i ++){
-        let record = this.props.topScores[i];
-        topScores.push(
-          <tr className='recordrow' key={record.key}>
-            <th>{i + 1}</th><td>{record.player}</td> <td>{record.score}</td> <td>{record.time} s</td>
-          </tr>
-        )
-      } 
-    }
-
-    return(
-
-      <div className='stats'>
-        <div className={className}>
-
-          <div className={classNameCurrent}>
-            <div className='row'>
-              <div className='column first'>
-                <p>Score: </p>
-                <p>Remaining cards: </p>
-                <p>Failed attempts: </p>
-              </div>
-              <div className='column values1'>
-                <p>{score}</p>
-                <p>{this.props.remainingCards.length}</p>
-                <p>{failedAttempts}</p>
-              </div>
-              <div className='column second'>
-                <p>Last time:</p>
-                <p>Best time:</p>
-                <p>Average time:</p>
-              </div>
-              <div className='column values2'>
-                <p>{lastTime}</p>
-                <p>{bestTime}</p>
-                <p>{avgTime}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className={classNameBest}>
-            <table className="topScoreTable">
-              {topScores}
-            </table>
-          </div>
-
-        </div>
-      </div>
-    );
-  }
-}
-
-class Title extends React.Component {
-
-  /* Svg title, randomly generated in SetGame component to form valid or invalid set, depending on the situation on the table */
-  
-  render() {
-    const {cArr, sArr} = this.props.ncData;
-    const usePhrases = [];
-    const colours = this.props.colours;
-    const coords = [{x:'-3680', y: '3490'},
-                    {x:'-2370', y: '2140'},
-                    {x:'-2950', y: '3490'}]
-
-    for(let i = 0; i < 3; i++){
-      const xLink = '#letter' + i.toString();
-      let fill;
-      let stroke;
-
-      if(sArr[i] === 0){
-        fill = 'none';
-        stroke = colours[cArr[i].toString()];
-      }
-      else if(sArr[i] === 1){
-        fill = "url('#diagonal-stripes-t" + cArr[i].toString() + "')";
-        stroke = 'none';
-      }
-      else {
-        fill = colours[cArr[i].toString()];
-        stroke = 'none';
-      }
-      usePhrases.push(
-        <use key={i} x={coords[i].x} y={coords[i].y} xlinkHref={xLink} stroke={stroke} strokeWidth='8' fill={fill} />
-      )
-    }
-
-    return(
-      <div className='title-wrapper'>
-        <svg className='title-box' viewBox='0 0 420 80'>
-          <defs>
-            <path id='letter0' d='M4737 2842 l-57 -58 0 -114 0 -114 57 -58 57 -58 112 0 c127 0 137 -5 132 -67 l-3 -38 -63 -3 c-75 -4 -92 7 -92 54 l0 34 -100 0 -100 0 0 -73 0 -73 63 -62 63 -62 158 0 159 0 64 63 63 64 0 104 0 105 -63 62 -63 62 -106 0 c-120 0 -138 8 -138 64 0 46 16 56 86 56 68 0 74 -5 74 -66 l0 -35 103 3 102 3 3 69 3 69 -63 64 -62 63 -166 0 -166 0 -57 -58z'></path>
-            <path id='letter1' d='M4204 4237 c-3 -8 -4 -47 -2 -88 3 -68 5 -74 26 -77 22 -3 22 -4 22 -203 l0 -199 -25 0 c-25 0 -25 -1 -25 -85 l0 -85 275 0 275 0 0 100 0 100 -85 0 c-69 0 -85 -3 -85 -15 0 -12 -14 -15 -65 -15 l-66 0 3 57 c2 34 8 58 16 61 6 2 12 -3 12 -12 0 -13 14 -16 85 -16 l85 0 0 115 0 115 -80 0 c-62 0 -82 -3 -86 -15 -4 -8 -12 -15 -20 -15 -10 0 -14 15 -14 55 l0 55 65 0 c37 0 65 -4 65 -10 0 -6 35 -10 85 -10 l85 0 0 100 0 100 -270 0 c-217 0 -272 -3 -276 -13z'></path>
-            <path id='letter2' d='M5550 2795 l0 -105 85 0 c78 0 85 2 85 20 0 13 7 20 20 20 19 0 20 -7 20 -199 0 -190 -1 -199 -20 -204 -18 -5 -20 -14 -20 -91 l0 -87 148 3 147 3 0 85 c0 81 -1 85 -22 88 -23 3 -23 4 -23 203 0 188 1 199 19 199 10 0 21 -9 24 -20 5 -19 12 -21 89 -18 l83 3 0 100 0 100 -317 3 -318 2 0 -105z'></path>
-            
-            <pattern id='diagonal-stripes-t0' x='0' y='0' width ='24' height='24' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
-            <rect c='0' y='0' width='12' height='24' stroke='none' fill={colours['0']} />
-            </pattern>
-            <pattern id='diagonal-stripes-t1' x='0' y='0' width ='24' height='24' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
-            <rect c='0' y='0' width='12' height='24' stroke='none' fill={colours['1']} />
-            </pattern>
-            <pattern id='diagonal-stripes-t2' x='0' y='0' width ='24' height='24' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
-            <rect c='0' y='0' width='12' height='24' stroke='none' fill={colours['2']} />
-            </pattern>
-          </defs>
-          <g transform="translate(0.000000, 640.000000) scale(0.100000, -0.100000)">
-            {usePhrases}
-          </g>
-        </svg>
-      </div>
-    );
-  }
-}
-
-function ShowTime(props) {
-  /* Component responsible for showing animated guess time in seconds */
-  
-  const className = classNames({
-    'time-wrapper': true,
-    'show': props.show})
-    
-  return(
-    <div className={className}>
-      <div className='lastTime'>
-        <span>
-          <svg width="0.8em" height="0.8em" viewBox="0 0 16 16" className="bi bi-clock" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <path fillRule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm8-7A8 8 0 1 1 0 8a8 8 0 0 1 16 0z"/>
-            <path fillRule="evenodd" d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z"/>
-          </svg>
-          &nbsp;{props.time}s
-        </span>
-      </div>
-    </div>
-  );
-}
-
-class CustomAlert extends React.Component {
-
-  render() {
-    const alertWrapperClass = classNames({
-      'alert-wrapper': true,
-      'hidden': !(this.props.success || this.props.failedAttempt || this.props.noSetFail || this.props.playerPrompt)
-    });
-    const alertStatusClass = classNames({
-        'alert-absolute': true,
-        'failedAttempt': this.props.failedAttempt,
-        'success': this.props.success,
-        'noSetFail': this.props.noSetFail,
-        'nicknamePrompt': !this.props.success && this.props.playerPrompt
-      });
-
-    let infoMain, infoAdd;
-    let button = <button className="alert-btn" onClick={this.props.close}>OK</button>  
-    if (this.props.failedAttempt){
-      infoMain = 'This is not a valid set.'
-      infoAdd = this.props.setsOnTable !== 0 ? "Try again or use a hint if you are stuck." : "If you think that there is no set on the table, use red button to deal 3 more cards.";
-    }
-    else if(this.props.noSetFail){
-      infoMain = this.props.setsOnTable === 1 ? 'There is exactly one valid set on the table.' : `There are ${this.props.setsOnTable} valid sets on table.`;
-      infoAdd = `If you are not sure whether to use No Set button, take a good look on the current title. Letters forming proper 'set' indicate presence of valid set on he table.`
-    }
-    else if (this.props.playerPrompt) {
-      /* Clicking OK button should also in this case update game record with new player name, because this prompt can be displayed after last selected set */
-      infoMain = `Provide your nickname:`
-      infoAdd = <form>
-                    <input className='name-input' type="text" maxlength="64" value={this.props.playerNickname} onChange={this.props.handlePlayerChange} />
-                </form>
-      button = <button className="alert-btn" onClick={() => {this.props.close(); this.props.updateGameRecord();}}>OK</button>  
-
-    }
-    else if (this.props.success){
-      infoMain = `Congratulations!`
-      infoAdd = 'You can see your stats above. Good job!'
-      button = <button className="alert-btn" onClick={this.props.reload}>PLAY AGAIN</button>
-    } 
-    
-    return(
-      <div className={alertWrapperClass}>
-				<div className={alertStatusClass}>
-					<h2 className="alert-main">{infoMain}</h2>
-          <h4 className='alert-additional'>{infoAdd}</h4>
-          {button}
-				</div>
-				<div className="alert-overlay"></div>
-			</div>
-    );
-
-  }
-}
-
-class Card extends React.Component {
-
-  render() {
-
-    const number = this.props.ncss[0];
-    const colour = this.props.ncss[1];
-    const shape = this.props.ncss[2];
-    const shading = this.props.ncss[3];
-    const isSelected = !(this.props.selectedCards.indexOf(this.props.ncss) === -1)
-    const isHinted = !(this.props.hintedCards.indexOf(this.props.ncss) === -1)
-    const isExcluded = !(this.props.excludedFromScore.indexOf(this.props.ncss) === -1)
-    const classNameCard = classNames({
-      'card': true,
-      'selected' : isSelected,
-      'hinted': isHinted
-    });
-
-    const classNameScore = classNames({
-      'score-wrapper': true,
-      'animate': this.props.showTime && isSelected && !isExcluded
-    });
-
-    const xLink = "#myShape" + shape;
-    const colours = this.props.colours;
-    let usePhrase;
-    let fill;
-    let stroke;
-
-    if(shading === '0'){
-      fill = 'none';
-      stroke = colours[colour];
-    }
-    else if(shading === '1'){
-      fill = "url('#diagonal-stripes" + colour + "')";
-      stroke = 'none';
-    }
-    else {
-      fill = colours[colour];
-      stroke = 'none';
-    }
-
-    if(number === '0'){
-      usePhrase = <g>
-                    <use x="-10" y="0" xlinkHref={xLink} stroke={stroke} strokeWidth='8' fill={fill} />;
-                  </g>
-    }
-    else if(number==='1'){
-      usePhrase = <g>
-                    <use x="-70" y="0" xlinkHref={xLink} stroke={stroke} strokeWidth='8' fill={fill} /> 
-                    <use x="+50" y="0" xlinkHref={xLink} stroke={stroke} strokeWidth='8' fill={fill} />
-                  </g>
-          
-    }
-    else{
-      usePhrase = <g>
-                    <use x="-130" y="0" xlinkHref={xLink} stroke={stroke} strokeWidth='8' fill={fill} /> 
-                    <use x="-10" y="0" xlinkHref={xLink} stroke={stroke} strokeWidth='8' fill={fill} />
-                    <use x="+110" y="0" xlinkHref={xLink} stroke={stroke} strokeWidth='8' fill={fill} />
-                  </g>
-    }
-
-    return (
-      <div className={classNameCard} onClick={this.props.selectCard.bind(this, this.props.ncss)}>
-        <svg className='svg-shapes-box' viewBox="0 0 400 200">
-          <defs>
-            
-            <path id='myShape0' x='0' y='0' d="M181.081 36.920 C 166.924 44.221,165.015 53.585,173.750 72.878 C 179.514 85.609,180.380 91.380,178.029 101.377 C 169.073 139.460,175.236 158.729,200.000 170.063 C 231.747 184.594,257.710 163.195,238.714 138.154 C 227.051 122.780,226.573 120.104,231.907 100.000 C 238.278 75.985,235.948 59.675,224.514 48.240 C 212.912 36.639,192.130 31.222,181.081 36.920" />
-            <rect id="myShape1" x='170' y = '30' width='80' height='140' rx='44' />
-            <polygon id="myShape2" points='210,30 160,100 210,170 260,100' />
-
-            <pattern id='diagonal-stripes0' x='0' y='0' width ='10' height='10' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
-              <rect c='0' y='0' width='5' height='10' stroke='none' fill={colours['0']} />
-            </pattern>
-
-            <pattern id='diagonal-stripes1' x='0' y='0' width ='10' height='10' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
-              <rect c='0' y='0' width='5' height='10' stroke='none' fill={colours['1']} />
-            </pattern>
-
-            <pattern id='diagonal-stripes2' x='0' y='0' width ='10' height='10' patternUnits='userSpaceOnUse' patternTransform='rotate(30)'>
-              <rect c='0' y='0' width='5' height='10' stroke='none' fill={colours['2']} />
-            </pattern>
-
-          </defs>
-        
-          {usePhrase}
-        
-        </svg>
-
-        <div className={classNameScore}>
-          <div className='scorePoint'>+1</div>
-        </div>  
-      </div>
-    );
-  }
-}
-
-function Table(props) {
-  
-  let onTable = [];
-  for(const card of props.cards){
-    onTable.push(<Card key={card} ncss={card} selectCard={props.selectCard} selectedCards={props.selectedCards} colours={props.colours} hintedCards={props.hintedCards} showTime={props.showTime} excludedFromScore={props.excludedFromScore}/>)
-  }
-  
-  return(
-    
-    <div className='table-wrapper'>
-      {onTable}
-    </div>
-  );
-}
 
 class SetGame extends React.Component {
 
@@ -894,12 +538,13 @@ class SetGame extends React.Component {
     
     return(
       <div>
-       <Title colours={this.colours} ncData={this.state.titleData}/>
-       <div className='button-wrapper'>
-         <button className={!this.state.rules? 'toggle-rules button' : 'toggle-rules-selected button'} onClick={this.toggleRules}>{!this.state.rules? 'Show rules' : 'Hide rules'}</button>
-         <button className={!this.state.noSetHint? 'noSet button short': 'noSet-hint button short'} onClick={this.checkIfSetOnTable}>No set!</button>
-         <button className={!this.state.noSetHint? 'noSet button long': 'noSet-hint button long'} onClick={this.checkIfSetOnTable}>There is no SET!</button>
-         
+        <Title colours={this.colours} ncData={this.state.titleData}/>
+
+        <div className='button-wrapper'>
+          <button className={!this.state.rules? 'toggle-rules button' : 'toggle-rules-selected button'} onClick={this.toggleRules}>{!this.state.rules? 'Show rules' : 'Hide rules'}</button>
+          <button className={!this.state.noSetHint? 'noSet button short': 'noSet-hint button short'} onClick={this.checkIfSetOnTable}>No set!</button>
+          <button className={!this.state.noSetHint? 'noSet button long': 'noSet-hint button long'} onClick={this.checkIfSetOnTable}>There is no SET!</button>
+          
           <button className={!this.state.stats? 'toggle-stats button' : 'toggle-stats-selected button'} onClick={this.toggleStats}>{!this.state.stats? 'Show stats' : 'Hide stats'}</button>
           <div className={!this.state.stats? 'hidden': 'tab-buttons-wrapper'}>
             <div className='tab-buttons'>
@@ -907,24 +552,24 @@ class SetGame extends React.Component {
               <button className={this.state.leaderboard ? "leaderboard-btn chosen" : "leaderboard-btn"} onClick={this.turnOnLeaderboard}>best</button>
             </div>
           </div>
-         
-         <button className='reload button' onClick={this.reload}>Reload</button>
-         <button className='hint button' disabled={this.state.noSetHint || this.state.hintedCards.length > 0} onClick={this.generateHint}>Hint</button>
-       </div>
-       <Rules rules={this.state.rules}/>
-       <Stats leaderboard={this.state.leaderboard} topScores={this.state.topScores} stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
-       <div className='afterStats'>
+            
+          <button className='reload button' onClick={this.reload}>Reload</button>
+          <button className='hint button' disabled={this.state.noSetHint || this.state.hintedCards.length > 0} onClick={this.generateHint}>Hint</button>
+        </div>
+
+        <Rules rules={this.state.rules}/>
+        <Stats leaderboard={this.state.leaderboard} topScores={this.state.topScores} stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
+        <div className='afterStats'>
           <CustomAlert playerPrompt={this.state.playerPrompt} playerNickname={this.state.playerNickname} handlePlayerChange={this.handlePlayerChange} handlePlayerSubmit={this.handlePlayerSubmit} success={this.state.finished} noSetFail={this.state.noSetFail} failedAttempt={this.state.failedAttempt} setsOnTable={this.countSets()} reload={this.reload} close={this.closeAlert} updateGameRecord={this.updateGameRecord}/>
-       </div>
-       <div className={this.state.successTimes.length < 5 && this.state.successTimes.length > 2 && this.state.playerNickname === ''? 'encouraging-info' : 'hidden'}>
-         Your game is now qualified for the leaderboard. <b>Keep going!</b> You can <span className='enter-button' onClick={() => this.setState({playerPrompt: true})}>enter</span> your name now or after finishing whole deck.
-       </div>
-       <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards} colours={this.colours} hintedCards={this.state.hintedCards} showTime={this.state.showTime} excludedFromScore={this.state.excludedFromScore}/>
-       <ShowTime show={this.state.showTime} time={this.state.successTimes[this.state.successTimes.length - 1]}/>
-        
+        </div>
+        <div className={this.state.successTimes.length < 5 && this.state.successTimes.length > 2 && this.state.playerNickname === ''? 'encouraging-info' : 'hidden'}>
+          Your game is now qualified for the leaderboard. <b>Keep going!</b> You can <span className='enter-button' onClick={() => this.setState({playerPrompt: true})}>enter</span> your name now or after finishing whole deck.
+        </div>
+        <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards} colours={this.colours} hintedCards={this.state.hintedCards} showTime={this.state.showTime} excludedFromScore={this.state.excludedFromScore}/>
+        <ShowTime show={this.state.showTime} time={this.state.successTimes[this.state.successTimes.length - 1]}/>
+        <Footer/>
         
         <div className='debugInfo'>
-        
           <button className='delete-cards-btn' onClick={this.removeCards}>Remove remaining cards.</button>
           <br/>
           <button className='show-time-btn' onClick={this.alert}>Alert</button>
