@@ -41,7 +41,9 @@ class SetGame extends React.Component {
       showTime: false,
       failedAttempt: false,
       noSetFail: false,
-      topScores: [], 
+      topScores: [],
+      fastestGames:[],
+      timeBasedLeaderboard: false,
       gameId: 0,
       playerPrompt: false,
       playerNickname: ''
@@ -61,7 +63,7 @@ class SetGame extends React.Component {
     this.handlePlayerChange = this.handlePlayerChange.bind(this);
     this.turnOnLeaderboard = this.turnOnLeaderboard.bind(this);
     this.turnOffLeaderboard = this.turnOffLeaderboard.bind(this);
-
+    this.toggleLeaderboards = this.toggleLeaderboards.bind(this);
     /* Debug only*/
     this.closeAlert = this.closeAlert.bind(this);
     this.removeCards = this.removeCards.bind(this);
@@ -97,23 +99,34 @@ class SetGame extends React.Component {
       failedAttempt: false,
       noSetFail: false,
       topScores: [],
+      fastestGames:[],
+      timeBasedLeaderboard: false,
       gameId: 0,
       playerPrompt: false,
     });
     this.fetchLeaderboard();
   }
 
-  fetchLeaderboard(callback) {
+  fetchLeaderboard() {
     const axios = require('axios');  
     axios.get('https://consp8.deta.dev/records/?top=3')
     .then((response) => {
       // handle success
       this.setState({
         topScores: response.data
-      }, () => {
-        if(typeof callback == 'function') {
-          callback();
-        }
+      });
+    })
+    .catch(function (error) {
+      // handle error
+      console.log(error);
+    })
+
+    const axios2 = require('axios');  
+    axios2.get('https://consp8.deta.dev/records/?top=3&time_based=true')
+    .then((response) => {
+      // handle success
+      this.setState({
+        fastestGames: response.data
       });
     })
     .catch(function (error) {
@@ -397,6 +410,13 @@ class SetGame extends React.Component {
       leaderboard: true,
     });
   }
+
+  toggleLeaderboards() {
+    this.setState({
+      timeBasedLeaderboard: !this.state.timeBasedLeaderboard,
+    });
+  }
+
   turnOffLeaderboard() {
     this.setState({
       leaderboard: false,
@@ -565,7 +585,7 @@ class SetGame extends React.Component {
         </div>
 
         <Rules rules={this.state.rules}/>
-        <Stats leaderboard={this.state.leaderboard} topScores={this.state.topScores} stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
+        <Stats leaderboard={this.state.leaderboard} topScores={this.state.topScores} fastestGames={this.state.fastestGames} timeBasedLeaderboard={this.state.timeBasedLeaderboard} toggleLeaderboards={this.toggleLeaderboards} stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
         <div className='afterStats'>
           <CustomAlert playerPrompt={this.state.playerPrompt} playerNickname={this.state.playerNickname} handlePlayerChange={this.handlePlayerChange} handlePlayerSubmit={this.handlePlayerSubmit} success={this.state.finished} noSetFail={this.state.noSetFail} failedAttempt={this.state.failedAttempt} setsOnTable={this.countSets()} reload={this.reload} close={this.closeAlert} updateGameRecord={this.updateGameRecord}/>
         </div>
@@ -579,7 +599,7 @@ class SetGame extends React.Component {
         <div className='debugInfo'>
           <button className='delete-cards-btn' onClick={this.removeCards}>Remove remaining cards.</button>
           <br/>
-          <button className='show-time-btn' onClick={this.alert}>Alert</button>
+          <button className='show-time-btn' onClick={this.toggleLeaderboards}>Alert</button>
           <span>{this.state.cardsToHint}</span>
           <br/>
           <span>Player:{this.state.playerNickname}</span>

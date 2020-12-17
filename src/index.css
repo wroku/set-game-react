@@ -123,7 +123,7 @@ h1 {
   color:#FFFFFF;
 }
 
-.topScoreTable {
+.topScoreTable, .fastestGamesTable {
   margin: 1.3rem auto 1rem auto;
   font-size: 0.7rem;
   width: 95%;
@@ -223,7 +223,7 @@ th, td {
 }
 
 .debugInfo {
-  display: none;
+  display: inline;
 }
 
 .hinted {
@@ -404,6 +404,9 @@ footer {
   font-size: 0.9rem;
 }
 
+.right {
+  float: right;
+}
 
 @media only screen and (min-device-width: 450px) {
   #root {
@@ -485,12 +488,12 @@ footer {
     margin-top: 10px;
   }
 
-  .topScoreTable {
+  .topScoreTable, .fastestGamesTable {
     margin: 1.3rem auto 1rem auto;
     font-size: 0.8rem;
     width: 95%;
   }
-
+  
   td, th {
     padding: 7px;
   }
@@ -583,7 +586,7 @@ footer {
     margin-top: 10px;
   }
 
-  .topScoreTable {
+  .topScoreTable, .fastestGamesTable {
     margin: 1.8rem auto 1rem 0.4rem;
     font-size: 0.9rem;
     width: 95%;

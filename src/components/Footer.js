@@ -3,7 +3,7 @@ import React from 'react';
 
 function Footer(props) {
     return(
-        <footer class='footer'>
+        <footer className='footer'>
         <p>&copy; 2020 Jakub Wronka</p>
         <svg class='github icon' viewBox='0 0 24 24' width='30'>
             <a href='https://github.com/wroku/set-game-react'>
