@@ -8,5 +8,5 @@ Get familiar with the rules and start picking sets of 3 cards which in your opin
 Unjustified click on "No set" button also subtracts one point from your score, but colors and shadings of letters from title directly corresponds to presence of valid set on the table. Enjoy!
 
 <p align="center" width="100%">
-  <img src="https://user-images.githubusercontent.com/65915712/102587096-967aad80-410b-11eb-87c9-f56070ff8a1b.gif)">
+  <img src="https://user-images.githubusercontent.com/65915712/102587096-967aad80-410b-11eb-87c9-f56070ff8a1b.gif">
  </p>
