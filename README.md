@@ -7,4 +7,6 @@ Get familiar with the rules and start picking sets of 3 cards which in your opin
 ### Hidden feature
 Unjustified click on "No set" button also subtracts one point from your score, but colors and shadings of letters from title directly corresponds to presence of valid set on the table. Enjoy!
 
-<img src="https://user-images.githubusercontent.com/65915712/101244819-ce93f080-3708-11eb-9850-f110547a7c43.png" width="30%"></img> <img src="https://user-images.githubusercontent.com/65915712/101244822-d2c00e00-3708-11eb-9c10-087e4215b687.png" width="30%"></img> <img src="https://user-images.githubusercontent.com/65915712/101244825-d6539500-3708-11eb-9166-deda2c0b682d.png" width="30%"></img> 
+<p align="center" width="100%">
+  <img src="https://user-images.githubusercontent.com/65915712/102587096-967aad80-410b-11eb-87c9-f56070ff8a1b.gif)">
+ </p>
