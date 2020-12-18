@@ -1,8 +1,8 @@
 # Set Game
-Single-player implementation of popular card game "SET", written with ES6, react.js and css3. <a href='https://set-ready-go.herokuapp.com/'>Check it out!</a>(first load after a break can take a few seconds).
+Single-player implementation of popular card game "SET", written with ES6, react.js and css3. <a href='https://set-ready-go.herokuapp.com/'>Check it out!</a> (first load after a break can take a few seconds).
 
 <p align="center" width="100%">
-  <img width="80%" src="https://user-images.githubusercontent.com/65915712/102587096-967aad80-410b-11eb-87c9-f56070ff8a1b.gif">
+  <img width="503" height="710" src="https://user-images.githubusercontent.com/65915712/102587096-967aad80-410b-11eb-87c9-f56070ff8a1b.gif">
 </p>
 
 ## Usage
