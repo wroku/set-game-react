@@ -46,7 +46,8 @@ class SetGame extends React.Component {
       timeBasedLeaderboard: false,
       gameId: 0,
       playerPrompt: false,
-      playerNickname: ''
+      playerNickname: '',
+      webSocketChat: '',
     };
     
     this.toggleRules = this.toggleRules.bind(this);
@@ -74,6 +75,12 @@ class SetGame extends React.Component {
   
   componentDidMount(){
     this.fetchLeaderboard();
+
+    this.ws = new WebSocket('ws://consp8.deta.dev/ws')
+    this.ws.onmessage = function(event) {
+      console.log(event.data)
+    }
+    
   }
 
   reload(){
@@ -467,7 +474,7 @@ class SetGame extends React.Component {
 
   /* functions responsible for generating and changing Title component */
 
-  generateRandom(){
+  generateRandom() {
     const cArr = [];
     const sArr = [];
     for (let i = 0; i < 3; i++){
@@ -561,6 +568,19 @@ class SetGame extends React.Component {
       leaderboard: false});
   }
 
+  /* Web socket experiments */
+
+  sendMessage() {
+    const input = document.getElementById("messageText");
+    try {
+      this.ws.send(input.value) //send data to the server
+    } 
+    catch (error) {
+      console.log(error) // catch error
+  }
+
+  }
+
   render() {
     
     return(
@@ -607,6 +627,12 @@ class SetGame extends React.Component {
           <span>Sel:{this.state.selectedCards}</span>
           <br/>
           <span>Id:{this.state.gameId}</span>
+          <h1>WebSocket Chat</h1>
+          <form action="" onSubmit={this.sendMessage()}>
+            <input type="text" id="messageText" autoComplete="off"/>
+            <button>Send</button>
+        </form>
+
         </div>
       </div>
     );
