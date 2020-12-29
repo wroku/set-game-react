@@ -225,7 +225,7 @@ th, td {
 }
 
 .debugInfo {
-  display: inline;
+  display: none;
 }
 
 .hinted {
