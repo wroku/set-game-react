@@ -55,7 +55,9 @@ h1 {
 }
 
 .selected {
-  border-width: 3px;
+  border-width: 4px;
+  background-color: #ebebeb;
+  
 }
 
 .svg-shapes-box {

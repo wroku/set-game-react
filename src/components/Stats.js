@@ -25,7 +25,7 @@ class Stats extends React.Component {
       
       const topScores = [
         <tr className='titlerow' key='titlerow'>
-            <th>#</th><th>Player</th> <th>Score</th> 
+            <th>#</th><th>Player</th><th>Score</th> 
             <th>Time 
               <span onClick={this.props.toggleLeaderboards} className='right'>
                 <svg width="1.2em" height="1.2em" viewBox="0 0 16 16" className="bi bi-clock" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -42,7 +42,7 @@ class Stats extends React.Component {
           let record = this.props.topScores[i];
           topScores.push(
             <tr className='recordrow' key={record.key}>
-              <th>{i + 1}</th><td>{record.player}</td> <td>{record.score}</td> <td>{record.time} s</td>
+              <th>{i + 1}</th><td>{record.player}</td><td>{record.score}</td><td>{record.time} s</td>
             </tr>
           )
         } 
@@ -50,7 +50,7 @@ class Stats extends React.Component {
       
       const fastestGames = [
         <tr className='titlerow' key='titlerow'>
-            <th>#</th><th>Player</th> <th>Average time</th> 
+            <th>#</th><th>Player</th><th>Average time</th> 
             <th>Score
               <span onClick={this.props.toggleLeaderboards} className='right'>
                 <svg height="14pt" width="14pt" viewBox="0 0 368 368"  xmlns="http://www.w3.org/2000/svg">
@@ -66,7 +66,7 @@ class Stats extends React.Component {
           let record = this.props.fastestGames[i];
           fastestGames.push(
             <tr className='recordrow' key={record.key}>
-              <th>{i + 1}</th><td>{record.player}</td> <td>{Math.round((record.time/record.score)*30)/10} s</td> <td>{record.score}</td>
+              <th>{i + 1}</th><td>{record.player}</td><td>{Math.round((record.time/record.score)*30)/10} s</td><td>{record.score}</td>
             </tr>
           )
         } 
@@ -106,7 +106,9 @@ class Stats extends React.Component {
   
             <div className={classNameBest}>
               <table className="topScoreTable">
-                {chosenLeaderboard}
+                <tbody>
+                  {chosenLeaderboard}
+                </tbody>
               </table>
             </div>
           </div>
