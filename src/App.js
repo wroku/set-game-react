@@ -575,7 +575,7 @@ class SetGame extends React.Component {
     const input = document.getElementById("messageText");
     
     try {
-      this.ws.send(input.value) //send data to the server
+      this.ws.send(JSON.stringify({"action" : "message", "message": `${input.value}`})) //send data to the server
     } 
     catch (error) {
       console.log(error) // catch error
@@ -584,7 +584,8 @@ class SetGame extends React.Component {
   }
   
   connect() {
-    this.ws = new WebSocket(`ws://127.0.0.1:8000/ws/${this.state.clientId}`)
+    this.ws = new WebSocket(`wss://qhurwv53tk.execute-api.eu-central-1.amazonaws.com/dev/`)
+    
     this.ws.onmessage = (event) => {
       let messages = this.state.webSocketChat.slice();
       messages.push(<span>{event.data}</span>);
@@ -592,6 +593,16 @@ class SetGame extends React.Component {
         webSocketChat: messages
       });
       console.log(event.data)
+    }
+
+    this.ws.onopen = () => {
+      // on connecting, do nothing but log it to the console
+      console.log('connected')
+    }
+
+    this.ws.onclose = () => {
+      console.log('disconnected')
+      // automatically try to reconnect on connection loss
     }
   }
 
