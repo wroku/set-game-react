@@ -410,6 +410,56 @@ footer {
   float: right;
 }
 
+.lobby {
+  width:94%;
+  margin: 0 auto;
+
+}
+.games {
+  width:50%;
+}
+.chatbox {
+  width:49%;
+  height:200px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  padding: 0;
+  background-color: rgba(0, 0, 0, 0.05);
+  
+}
+.messages {
+  height:84%;
+  overflow: scroll;
+  overflow-x: hidden;
+}
+.chat-message {
+  margin-left: 8px;
+  margin-bottom:9px;
+}
+.chat-text {
+  padding: 5px;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  background-color: rgba(0, 0, 0, 0.05);
+  display:inline;
+}
+.input-wrapper {
+  padding:4px;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+#messageText{
+  margin-left:8px;
+  box-sizing: border-box;
+  border-radius:5px;
+  width:170px;
+}
+.send-button {
+  border-radius:3px;
+  top:85%;
+  margin-left: 1.5rem;
+}
+
 @media only screen and (min-device-width: 450px) {
   #root {
     width: 450px;

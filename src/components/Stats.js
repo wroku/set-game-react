@@ -9,7 +9,7 @@ class Stats extends React.Component {
         'hidden': !this.props.stats
       });
       const classNameCurrent = classNames({
-        'currentStatrs': true,
+        'currentStats': true,
         'hidden': this.props.leaderboard
       });
       const classNameBest = classNames({

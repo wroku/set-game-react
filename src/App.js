@@ -6,8 +6,49 @@ import Table from './components/Table';
 import {CustomAlert, ShowTime} from './components/DisplayHelpers'; 
 import Footer from './components/Footer';
 import {Leaderboard} from './api/leaderboard';
+import classNames from 'classnames';
 
 
+class Lobby extends React.Component {
+
+  render() {
+    const className = classNames({
+      'lobby': true,
+      'hidden': !this.props.lobby
+    });
+    const chatMessages = [];
+    for (let i=0; i < this.props.messages.length; i++){
+      chatMessages.push(
+        <div className='chat-message'>
+          <div className='chat-text'>
+            {this.props.messages[i]}
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className={className}>
+        <div className='row'>
+          <div className='games'>
+            Games
+          </div>
+          <div className='chatbox'>
+            <div className='messages'>
+              {chatMessages}
+
+            </div>
+            <div className='input-wrapper'>
+              <input type="text"  id="messageText" autoComplete="off"/>
+              <button className='send-button' onClick={this.props.sendMessage}>Send</button>
+            </div>
+            
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+}
 class SetGame extends React.Component {
 
   /* Main stateful component  */
@@ -48,8 +89,9 @@ class SetGame extends React.Component {
       gameId: 0,
       playerPrompt: false,
       playerNickname: '',
-      webSocketChat: [],
-      clientId: Date.now()
+      multiplayer: true,
+      lobby: false,
+      webSocketChat: ['first message', 'some dumbass replying to that', 'some', 'more', 'msgs', 'first message', 'some dumbass replying to that', 'some', 'more', 'msgs'],
     };
     
     this.toggleRules = this.toggleRules.bind(this);
@@ -71,6 +113,10 @@ class SetGame extends React.Component {
     /*WS*/
     this.sendMessage = this.sendMessage.bind(this);
     this.connect = this.connect.bind(this);
+
+    /*MP*/
+    this.toggleMultiplayer = this.toggleMultiplayer.bind(this);
+    this.toggleLobby = this.toggleLobby.bind(this);
 
     /* Debug only*/
     this.closeAlert = this.closeAlert.bind(this);
@@ -113,6 +159,7 @@ class SetGame extends React.Component {
       gameId: 0,
       playerPrompt: false,
     });
+
     this.fetchLeaderboard();
   }
 
@@ -360,6 +407,18 @@ class SetGame extends React.Component {
     });
   }
 
+  toggleMultiplayer() {
+    this.setState({
+      multiplayer: !this.state.multiplayer,
+    });
+  }
+
+  toggleLobby() {
+    this.setState({
+      lobby: !this.state.lobby,
+    });
+  }
+
   checkIfSetOnTable() {
     const numberOfSets = this.countSets();
     if (numberOfSets > 0) {
@@ -517,7 +576,7 @@ class SetGame extends React.Component {
     
     this.ws.onmessage = (event) => {
       let messages = this.state.webSocketChat.slice();
-      messages.push(<span>{event.data}</span>);
+      messages.push(<span>{event.data.slice(16)}</span>);
       this.setState({
         webSocketChat: messages
       });
@@ -541,7 +600,7 @@ class SetGame extends React.Component {
       <div>
         <Title colours={this.colours} ncData={this.state.titleData}/>
 
-        <div className='button-wrapper'>
+        <div className={!this.state.multiplayer ? 'button-wrapper' : 'hidden'}>
           <button className={!this.state.rules? 'toggle-rules button' : 'toggle-rules-selected button'} onClick={this.toggleRules}>{!this.state.rules? 'Show rules' : 'Hide rules'}</button>
           <button className={!this.state.noSetHint? 'noSet button short': 'noSet-hint button short'} onClick={this.checkIfSetOnTable}>No set!</button>
           <button className={!this.state.noSetHint? 'noSet button long': 'noSet-hint button long'} onClick={this.checkIfSetOnTable}>There is no SET!</button>
@@ -558,6 +617,15 @@ class SetGame extends React.Component {
           <button className='hint button' disabled={this.state.noSetHint || this.state.hintedCards.length > 0} onClick={this.generateHint}>Hint</button>
         </div>
 
+        <div className={this.state.multiplayer ? 'button-wrapper' : 'hidden'}>
+          
+          <button className={!this.state.rules? 'toggle-rules button' : 'toggle-rules-selected button'} onClick={this.toggleRules}>{!this.state.rules? 'Show rules' : 'Hide rules'}</button>
+          <button className='reload button' onClick={this.toggleLobby}>Lobby/Game</button>
+
+        
+        
+        </div>
+        <Lobby lobby={this.state.lobby} sendMessage={this.sendMessage} messages={this.state.webSocketChat}/>
         <Rules rules={this.state.rules}/>
         <Stats leaderboard={this.state.leaderboard} topScores={this.state.topScores} fastestGames={this.state.fastestGames} timeBasedLeaderboard={this.state.timeBasedLeaderboard} toggleLeaderboards={this.toggleLeaderboards} stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
         <div className='afterStats'>
@@ -571,24 +639,13 @@ class SetGame extends React.Component {
         <Footer/>
         
         <div className='debugInfo'>
-          <button className='delete-cards-btn' onClick={this.removeCards}>Remove remaining cards.</button>
+          <button className='delete-cards-btn' onClick={this.toggleMultiplayer}>Multiplayer</button>
           <br/>
-          <button className='show-time-btn' onClick={this.toggleLeaderboards}>Alert</button>
-          <span>{this.state.cardsToHint}</span>
-          <br/>
-          <span>Player:{this.state.playerNickname}</span>
-          <br/>
-          <span>Sel:{this.state.selectedCards}</span>
-          <br/>
-          <span>Id:{this.state.gameId}</span>
-          <h1>WebSocket Chat</h1>
           
-            <input type="text"  id="messageText" autoComplete="off"/>
-            <button onClick={this.sendMessage}>Send</button>
-            <button onClick={this.connect}>Connect</button>
-            {this.state.webSocketChat}
-        
-
+          
+         
+          <button onClick={this.connect}>Connect</button>
+         
         </div>
       </div>
     );
