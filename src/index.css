@@ -415,19 +415,21 @@ footer {
   margin: 0 auto;
 
 }
-.games {
-  width:50%;
-}
-.chatbox, .games {
+
+.chatbox, .games, .current-game {
   margin-left: 7px;
   width:48%;
   height:200px;
   box-sizing: border-box;
   border-radius: 4px;
   padding: 8px 0 0 0;
-  background-color: rgb(233, 233, 233);
-  
+  background-color: rgb(233, 233, 233); 
 }
+.games, .current-game {
+  padding: 0;
+  text-align: center;
+}
+
 .chatbox-overlays {
   position:relative;
 }
@@ -803,12 +805,36 @@ footer {
   }
 }
 
-.createGame {
+.createGame{
   background-color: #4CAF50;
   font-size: 0.75rem;
   border-radius: 18px;
   border-style: solid;
   border-color: #4CAF50;
   width: 110px;
-  height: 3px;
+  height: 25px;
+  margin: 1rem;
+}
+.createGame:hover{
+  font-weight: bold;
+  cursor: pointer;
+}
+.joinGame{
+  color:green;
+  text-decoration:underline;
+}
+.joinGame:hover{
+  font-weight: bold;
+  cursor: pointer;
+}
+.gamesBox-title-wrapper {
+  text-align: center;
+  padding:4px;
+  background-color: rgba(0, 0, 0, 0.05);
+}
+.lobby-game{
+  margin: 1rem;
+}
+.game-scores, .game-info{
+  margin: 1rem auto;
 }

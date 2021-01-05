@@ -16,10 +16,11 @@ class Lobby extends React.Component {
       'lobby': true,
       'hidden': !this.props.lobby
     });
+
     const chatMessages = [];
     for (let i=0; i < this.props.messages.length; i++){
       chatMessages.push(
-        <div className='chat-message'>
+        <div key={i} className='chat-message'>
           <div className='chat-text'>
             {this.props.messages[i]}
           </div>
@@ -29,8 +30,8 @@ class Lobby extends React.Component {
     const lobbyGames = [];
     for(const game of this.props.games){
       lobbyGames.push(
-        <div className='lobby-game'>
-          <span>{game.ID} Started: {game.started}</span>
+        <div className='lobby-game' key={game.ID}>
+          <span>{game.ID} {game.started ? "ongoing" : <span className='joinGame' onClick={() => this.props.joinGame(game.ID)}>Join</span>}</span>
         </div>
       );
     }
@@ -38,10 +39,37 @@ class Lobby extends React.Component {
     return (
       <div className={className}>
         <div className='row'>
-          <div className='games'>
-            <button className='createGame button' onClick={this.props.sendMessage}>Create game</button>
-            {lobbyGames}
+          <div className={!this.props.currentGame ? 'games' : 'games hidden'}>
+            <div className='gamesBox-title-wrapper'>
+              Games
+            </div>
+            {lobbyGames}            
+            <button className='createGame' onClick={this.props.createGame}>Create game</button>
+
           </div>
+
+          <div className={this.props.currentGame ? 'current-game': 'current-game hidden'}>
+            <div className='gamesBox-title-wrapper'>
+              GameName game
+            </div>
+            <div className='game-info'>
+              Remaining cards:
+            </div>
+            
+           
+            <table className='game-scores'>
+              <tbody>
+                <tr>
+                  <th>player</th><th>Score</th><th>Avg time</th>
+                </tr>
+                <tr>
+                  <th>player</th><th>Score</th><th>Avg time</th>
+                </tr>
+              </tbody>
+            </table>
+              
+          </div>
+
           <div className='chatbox'>
             <div className='chatbox-overlays'>
               <div className='chatbox-overlay-top'>
@@ -105,12 +133,12 @@ class SetGame extends React.Component {
       timeBasedLeaderboard: false,
       gameId: 0,
       playerPrompt: false,
-      playerNickname: '',
+      playerNickname: 'Anonym',
       multiplayer: true,
-      lobby: false,
+      lobby: true,
       webSocketChat: ['first message', 'some dumbass replying to that', 'some', 'more', 'msgs', 'first message', 'some dumbass replying to that', 'some', 'more', 'msgs'],
-      games: [],
-      currentGame: [],
+      games: [{"ID":"mockGame", "started": false}],
+      currentGame: false,
     };
     
     this.toggleRules = this.toggleRules.bind(this);
@@ -132,8 +160,9 @@ class SetGame extends React.Component {
     /*WS*/
     this.sendMessage = this.sendMessage.bind(this);
     this.connect = this.connect.bind(this);
+    this.createGame = this.createGame.bind(this);
     this.joinGame = this.joinGame.bind(this);
-
+    
 
     /*MP*/
     this.toggleMultiplayer = this.toggleMultiplayer.bind(this);
@@ -592,7 +621,7 @@ class SetGame extends React.Component {
   }
 
   joinGame(gameId) {
-    
+    console.log('here we go');
     try {
       this.ws.send(JSON.stringify({"action" : "joinGame", "gameId": gameId})); //send data to the server
     } 
@@ -600,9 +629,20 @@ class SetGame extends React.Component {
       console.log(error) // catch error
     }
   }
+  
+  createGame() {
+    
+    try {
+      this.ws.send(JSON.stringify({"action" : "createGame"})); //send data to the server
+    } 
+    catch (error) {
+      console.log(error) // catch error
+    }
+  }
+
 
   connect() {
-    this.ws = new WebSocket(`wss://qhurwv53tk.execute-api.eu-central-1.amazonaws.com/dev/`)
+    this.ws = new WebSocket(`wss://qhurwv53tk.execute-api.eu-central-1.amazonaws.com/dev?player=${this.state.playerNickname}`)
     
     this.ws.onmessage = (event) => {
       /*Write dispatcher for chatmessage, lobby info, game info, start game, selected...*/
@@ -623,6 +663,18 @@ class SetGame extends React.Component {
             games.push(data.lobbyUpdate);
             this.setState({
               games: games
+            });
+            break;
+
+          case "createdGame":
+            this.setState({
+              currentGame: data.createdGame
+            });
+            break;
+          
+          case "joinedGame":
+            this.setState({
+              currentGame: data.joinedGame
             });
             break;
 
@@ -681,12 +733,12 @@ class SetGame extends React.Component {
         <div className={this.state.multiplayer ? 'button-wrapper' : 'hidden'}>
           
           <button className={!this.state.rules? 'toggle-rules button' : 'toggle-rules-selected button'} onClick={this.toggleRules}>{!this.state.rules? 'Show rules' : 'Hide rules'}</button>
-          <button className='reload button' onClick={this.toggleLobby}>Lobby/Game</button>
+          <button className='reload button' onClick={this.toggleLobby}>{this.state.currentGame ? 'Game' : 'Lobby'}</button>
 
         
         
         </div>
-        <Lobby lobby={this.state.lobby} sendMessage={this.sendMessage} messages={this.state.webSocketChat} games={this.state.games}/>
+        <Lobby lobby={this.state.lobby} sendMessage={this.sendMessage} createGame={this.createGame} joinGame={this.joinGame} messages={this.state.webSocketChat} games={this.state.games} currentGame={this.state.currentGame}/>
         <Rules rules={this.state.rules}/>
         <Stats leaderboard={this.state.leaderboard} topScores={this.state.topScores} fastestGames={this.state.fastestGames} timeBasedLeaderboard={this.state.timeBasedLeaderboard} toggleLeaderboards={this.toggleLeaderboards} stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
         <div className='afterStats'>
