@@ -26,17 +26,34 @@ class Lobby extends React.Component {
         </div>
       );
     }
+    const lobbyGames = [];
+    for(const game of this.props.games){
+      lobbyGames.push(
+        <div className='lobby-game'>
+          <span>{game.ID} Started: {game.started}</span>
+        </div>
+      );
+    }
+
     return (
       <div className={className}>
         <div className='row'>
           <div className='games'>
-            Games
+            <button className='createGame button' onClick={this.props.sendMessage}>Create game</button>
+            {lobbyGames}
           </div>
           <div className='chatbox'>
+            <div className='chatbox-overlays'>
+              <div className='chatbox-overlay-top'>
+              </div>
+              <div className='chatbox-overlay-bottom'>
+              </div>
+            </div>
+            
             <div className='messages'>
               {chatMessages}
-
             </div>
+            
             <div className='input-wrapper'>
               <input type="text"  id="messageText" autoComplete="off"/>
               <button className='send-button' onClick={this.props.sendMessage}>Send</button>
@@ -92,6 +109,8 @@ class SetGame extends React.Component {
       multiplayer: true,
       lobby: false,
       webSocketChat: ['first message', 'some dumbass replying to that', 'some', 'more', 'msgs', 'first message', 'some dumbass replying to that', 'some', 'more', 'msgs'],
+      games: [],
+      currentGame: [],
     };
     
     this.toggleRules = this.toggleRules.bind(this);
@@ -113,6 +132,8 @@ class SetGame extends React.Component {
     /*WS*/
     this.sendMessage = this.sendMessage.bind(this);
     this.connect = this.connect.bind(this);
+    this.joinGame = this.joinGame.bind(this);
+
 
     /*MP*/
     this.toggleMultiplayer = this.toggleMultiplayer.bind(this);
@@ -563,28 +584,68 @@ class SetGame extends React.Component {
     const input = document.getElementById("messageText");
     
     try {
-      this.ws.send(JSON.stringify({"action" : "message", "message": `${input.value}`})) //send data to the server
+      this.ws.send(JSON.stringify({"action" : "message", "message": `${input.value}`})); //send data to the server
     } 
     catch (error) {
       console.log(error) // catch error
+    }
   }
 
+  joinGame(gameId) {
+    
+    try {
+      this.ws.send(JSON.stringify({"action" : "joinGame", "gameId": gameId})); //send data to the server
+    } 
+    catch (error) {
+      console.log(error) // catch error
+    }
   }
-  
+
   connect() {
     this.ws = new WebSocket(`wss://qhurwv53tk.execute-api.eu-central-1.amazonaws.com/dev/`)
     
     this.ws.onmessage = (event) => {
+      /*Write dispatcher for chatmessage, lobby info, game info, start game, selected...*/
+      const data = JSON.parse(event.data);
       let messages = this.state.webSocketChat.slice();
-      messages.push(<span>{event.data.slice(16)}</span>);
-      this.setState({
-        webSocketChat: messages
-      });
-      console.log(event.data)
+      
+      for (const key in data) {
+        switch(key) {
+
+          case "lobbyInfo":
+            this.setState({
+              games: data.lobbyInfo
+            });
+            break;
+
+          case "lobbyUpdate":
+            const games = this.state.games.slice();
+            games.push(data.lobbyUpdate);
+            this.setState({
+              games: games
+            });
+            break;
+
+          case "message":
+            messages.push(<span>{data.message}</span>);
+            this.setState({
+              webSocketChat: messages
+            });
+            break;
+
+          default:
+            console.log('ERR:Unrecognized message.')
+            messages.push(<span>#ERR:Unrecognized message.#</span>);
+            this.setState({
+              webSocketChat: messages
+            });
+        }
+      }
+      console.log(data)
     }
 
     this.ws.onopen = () => {
-      // on connecting, do nothing but log it to the console
+      this.ws.send(JSON.stringify({"action":"lobbyInfo"}));
       console.log('connected')
     }
 
@@ -625,7 +686,7 @@ class SetGame extends React.Component {
         
         
         </div>
-        <Lobby lobby={this.state.lobby} sendMessage={this.sendMessage} messages={this.state.webSocketChat}/>
+        <Lobby lobby={this.state.lobby} sendMessage={this.sendMessage} messages={this.state.webSocketChat} games={this.state.games}/>
         <Rules rules={this.state.rules}/>
         <Stats leaderboard={this.state.leaderboard} topScores={this.state.topScores} fastestGames={this.state.fastestGames} timeBasedLeaderboard={this.state.timeBasedLeaderboard} toggleLeaderboards={this.toggleLeaderboards} stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
         <div className='afterStats'>
