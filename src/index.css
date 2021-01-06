@@ -497,7 +497,12 @@ footer {
   top:85%;
   margin-left: 1.5rem;
 }
-
+.startGame {
+  border-color: indianred;
+}
+.startGame:hover {
+  background-color: indianred;
+}
 
 @media only screen and (min-device-width: 450px) {
   #root {
@@ -852,6 +857,11 @@ footer {
 .lobby-game{
   margin: 1rem;
 }
-.game-scores, .game-info{
+.game-info{
   margin: 1rem auto;
+}
+.game-scores{
+  margin: 1rem auto;
+  font-size:0.6rem;
+  font-weight: normal;
 }

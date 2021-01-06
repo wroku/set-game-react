@@ -37,6 +37,19 @@ class Lobby extends React.Component {
       );
     }
 
+    const scores = [];
+    scores.push(
+      <tr key='tittleRow'>
+        <th></th><th>Score</th><th>Avg time</th>
+      </tr>
+      );
+    for (const player of this.props.players){
+      scores.push(
+        <tr key={player.ID}>
+          <th>{player.name}</th><th>0</th><th>0</th>
+        </tr>
+      );
+    };
     return (
       <div className={className}>
         <div className='row'>
@@ -60,15 +73,10 @@ class Lobby extends React.Component {
            
             <table className='game-scores'>
               <tbody>
-                <tr>
-                  <th>player</th><th>Score</th><th>Avg time</th>
-                </tr>
-                <tr>
-                  <th>player</th><th>Score</th><th>Avg time</th>
-                </tr>
+                {scores}
               </tbody>
             </table>
-              
+  
           </div>
 
           <div className='chatbox'>
@@ -135,12 +143,13 @@ class SetGame extends React.Component {
       timeBasedLeaderboard: false,
       gameId: 0,
       playerPrompt: false,
-      playerNickname: 'Anonym',
+      playerNickname: `Anonym${Math.floor(Math.random()*100)}`,
       multiplayer: true,
       lobby: true,
       webSocketChat:[],     
       games: [{"ID":"mockGame", "started": false}],
       currentGame: false,
+      players: [],
     };
     
     this.toggleRules = this.toggleRules.bind(this);
@@ -164,7 +173,8 @@ class SetGame extends React.Component {
     this.connect = this.connect.bind(this);
     this.createGame = this.createGame.bind(this);
     this.joinGame = this.joinGame.bind(this);
-    
+    this.startGame = this.startGame.bind(this);
+
 
     /*MP*/
     this.toggleMultiplayer = this.toggleMultiplayer.bind(this);
@@ -403,6 +413,7 @@ class SetGame extends React.Component {
       }
       setTimeout(() => this.setState({selectedCards: []}), 3000 * this.animationTimeFactor)
     }
+
     else {
       const fails = this.state.fails.slice();
       fails.splice(-1, 1, fails[fails.length - 1] + 1);
@@ -643,6 +654,15 @@ class SetGame extends React.Component {
     }
   }
 
+  startGame() {
+    try {
+      const deck = this.fisherYatesShuffle(this.generateDeck());
+      this.ws.send(JSON.stringify({"action" : "startGame", "deck": deck})); //send data to the server
+    } 
+    catch (error) {
+      console.log(error) // catch error
+    }
+  }
 
   connect() {
     this.ws = new WebSocket(`wss://qhurwv53tk.execute-api.eu-central-1.amazonaws.com/dev?player=${this.state.playerNickname}`)
@@ -671,18 +691,36 @@ class SetGame extends React.Component {
 
           case "createdGame":
             this.setState({
-              currentGame: data.createdGame
+              currentGame: data.createdGame.gameID,
+              players:[data.createdGame.players]
             });
             break;
           
           case "joinedGame":
             this.setState({
-              currentGame: data.joinedGame
+              currentGame: data.joinedGame.gameId,
+              players: data.joinedGame.players
             });
             break;
 
-          case "message":
+          case "startedGame":
+            this.setState({
+              cards: data.startedGame.deck.slice(0, this.noP * 4),
+              remainingCards: data.startedGame.deck.slice (this.noP * 4),
+            });
+            break;
+            
+          case "newPlayer":
+            const players = this.state.players;
+            if (data.newPlayer.name !== this.state.playerNickname){
+              players.push(data.newPlayer);
+              this.setState({
+                players
+              });
+            }
+            break;
 
+          case "message":
             messages.push(
               data.message
             );
@@ -741,11 +779,12 @@ class SetGame extends React.Component {
           
           <button className={!this.state.rules? 'toggle-rules button' : 'toggle-rules-selected button'} onClick={this.toggleRules}>{!this.state.rules? 'Show rules' : 'Hide rules'}</button>
           <button className='reload button' onClick={this.toggleLobby}>{this.state.currentGame ? 'Game' : 'Lobby'}</button>
+          <button className='startGame button' onClick={this.startGame}>Start game!</button>
 
         
         
         </div>
-        <Lobby lobby={this.state.lobby} sendMessage={this.sendMessage} createGame={this.createGame} joinGame={this.joinGame} messages={this.state.webSocketChat} games={this.state.games} currentGame={this.state.currentGame} playerNickname={this.state.playerNickname}/>
+        <Lobby lobby={this.state.lobby} sendMessage={this.sendMessage} createGame={this.createGame} joinGame={this.joinGame} messages={this.state.webSocketChat} games={this.state.games} currentGame={this.state.currentGame} playerNickname={this.state.playerNickname} players={this.state.players}/>
         <Rules rules={this.state.rules}/>
         <Stats leaderboard={this.state.leaderboard} topScores={this.state.topScores} fastestGames={this.state.fastestGames} timeBasedLeaderboard={this.state.timeBasedLeaderboard} toggleLeaderboards={this.toggleLeaderboards} stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
         <div className='afterStats'>
