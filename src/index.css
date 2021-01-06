@@ -450,20 +450,37 @@ footer {
 }
 .messages {
   height:84%;
-  overflow: scroll;
+  overflow: auto;
   overflow-x: hidden;
+  display:flex;
+  flex-flow: row wrap;
+  align-content: flex-start;
+  flex: 1;
 }
 .chat-message {
   margin-left: 8px;
   margin-bottom:9px;
+  width:80%;
+  display: flex;
+  flex-flow: column;
+  align-items: flex-end;
+}
+.sended {
+  margin-left:50px;
+  
 }
 .chat-text {
   padding: 5px;
-  border-radius: 5px;
   font-size: 0.8rem;
+  border-radius: 5px;
   background-color: rgba(0, 0, 0, 0.05);
-  display:inline;
+  align-self: flex-start; 
+  
 }
+.own{
+  align-self:flex-end;
+}
+
 .input-wrapper {
   padding:4px;
   background-color: rgba(0, 0, 0, 0.05);

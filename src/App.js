@@ -20,13 +20,14 @@ class Lobby extends React.Component {
     const chatMessages = [];
     for (let i=0; i < this.props.messages.length; i++){
       chatMessages.push(
-        <div key={i} className='chat-message'>
-          <div className='chat-text'>
-            {this.props.messages[i]}
+        <div key={i} className={this.props.messages[i].author === this.props.playerNickname? 'chat-message sended' : 'chat-message'}>
+            <div className={this.props.messages[i].author === this.props.playerNickname? 'chat-text own' : 'chat-text'}>
+              {this.props.messages[i].content}
           </div>
         </div>
       );
     }
+
     const lobbyGames = [];
     for(const game of this.props.games){
       lobbyGames.push(
@@ -82,6 +83,7 @@ class Lobby extends React.Component {
               {chatMessages}
             </div>
             
+            
             <div className='input-wrapper'>
               <input type="text"  id="messageText" autoComplete="off"/>
               <button className='send-button' onClick={this.props.sendMessage}>Send</button>
@@ -136,7 +138,7 @@ class SetGame extends React.Component {
       playerNickname: 'Anonym',
       multiplayer: true,
       lobby: true,
-      webSocketChat: ['first message', 'some dumbass replying to that', 'some', 'more', 'msgs', 'first message', 'some dumbass replying to that', 'some', 'more', 'msgs'],
+      webSocketChat:[],     
       games: [{"ID":"mockGame", "started": false}],
       currentGame: false,
     };
@@ -614,6 +616,7 @@ class SetGame extends React.Component {
     
     try {
       this.ws.send(JSON.stringify({"action" : "message", "message": `${input.value}`})); //send data to the server
+      input.value = '';
     } 
     catch (error) {
       console.log(error) // catch error
@@ -679,7 +682,11 @@ class SetGame extends React.Component {
             break;
 
           case "message":
-            messages.push(<span>{data.message}</span>);
+
+            messages.push(
+              data.message
+            );
+
             this.setState({
               webSocketChat: messages
             });
@@ -738,7 +745,7 @@ class SetGame extends React.Component {
         
         
         </div>
-        <Lobby lobby={this.state.lobby} sendMessage={this.sendMessage} createGame={this.createGame} joinGame={this.joinGame} messages={this.state.webSocketChat} games={this.state.games} currentGame={this.state.currentGame}/>
+        <Lobby lobby={this.state.lobby} sendMessage={this.sendMessage} createGame={this.createGame} joinGame={this.joinGame} messages={this.state.webSocketChat} games={this.state.games} currentGame={this.state.currentGame} playerNickname={this.state.playerNickname}/>
         <Rules rules={this.state.rules}/>
         <Stats leaderboard={this.state.leaderboard} topScores={this.state.topScores} fastestGames={this.state.fastestGames} timeBasedLeaderboard={this.state.timeBasedLeaderboard} toggleLeaderboards={this.toggleLeaderboards} stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
         <div className='afterStats'>
