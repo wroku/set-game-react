@@ -46,7 +46,7 @@ class Lobby extends React.Component {
     for (const player of this.props.players){
       scores.push(
         <tr key={player.ID}>
-          <th>{player.name}</th><th>0</th><th>0</th>
+          <th>{player.name}</th><th>{player.score}</th><th>{player.avgTime}</th>
         </tr>
       );
     };
@@ -144,6 +144,7 @@ class SetGame extends React.Component {
       gameId: 0,
       playerPrompt: false,
       playerNickname: `Anonym${Math.floor(Math.random()*100)}`,
+      connectionID: 0,
       multiplayer: true,
       lobby: true,
       webSocketChat:[],     
@@ -670,14 +671,21 @@ class SetGame extends React.Component {
     this.ws.onmessage = (event) => {
       /*Write dispatcher for chatmessage, lobby info, game info, start game, selected...*/
       const data = JSON.parse(event.data);
+      console.log(data);
       let messages = this.state.webSocketChat.slice();
-      
+      let players = this.state.players.slice();
+
       for (const key in data) {
         switch(key) {
 
           case "lobbyInfo":
             this.setState({
               games: data.lobbyInfo
+            });
+            break;
+          case "ownID":
+            this.setState({
+              connectionID: data.ownID
             });
             break;
 
@@ -711,8 +719,8 @@ class SetGame extends React.Component {
             break;
             
           case "newPlayer":
-            const players = this.state.players;
-            if (data.newPlayer.name !== this.state.playerNickname){
+            
+            if (data.newPlayer.ID !== this.state.connectionID){
               players.push(data.newPlayer);
               this.setState({
                 players
@@ -730,6 +738,19 @@ class SetGame extends React.Component {
             });
             break;
 
+          case "failedSelect":
+            for(const player of players){
+              if(player.ID === data.failedSelect){
+                const currentScore = player.score;
+                player.score = currentScore - 1;
+              }
+            }
+            this.setState({
+              players
+            });
+          
+            break;
+
           default:
             console.log('ERR:Unrecognized message.')
             messages.push(<span>#ERR:Unrecognized message.#</span>);
@@ -738,7 +759,7 @@ class SetGame extends React.Component {
             });
         }
       }
-      console.log(data)
+      
     }
 
     this.ws.onopen = () => {
