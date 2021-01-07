@@ -46,7 +46,7 @@ class Lobby extends React.Component {
     for (const player of this.props.players){
       scores.push(
         <tr key={player.ID}>
-          <th>{player.name}</th><th>{player.score}</th><th>{player.avgTime}</th>
+          <th>{player.name}</th><th>{player.score}</th><th>{player.times}</th>
         </tr>
       );
     };
@@ -67,7 +67,7 @@ class Lobby extends React.Component {
               GameName game
             </div>
             <div className='game-info'>
-              Remaining cards:
+              Remaining cards: {this.props.nofRemainingCards}
             </div>
             
            
@@ -146,6 +146,7 @@ class SetGame extends React.Component {
       playerNickname: `Anonym${Math.floor(Math.random()*100)}`,
       connectionID: 0,
       multiplayer: true,
+      started: false,
       lobby: true,
       webSocketChat:[],     
       games: [{"ID":"mockGame", "started": false}],
@@ -175,6 +176,13 @@ class SetGame extends React.Component {
     this.createGame = this.createGame.bind(this);
     this.joinGame = this.joinGame.bind(this);
     this.startGame = this.startGame.bind(this);
+    this.failedSelect = this.failedSelect.bind(this);
+    this.selectSet = this.selectSet.bind(this);
+    this.noSet = this.noSet.bind(this);
+
+    this.lastSelectedMultiplayer = this.lastSelectedMultiplayer.bind(this);
+    this.receivedValidSet = this.receivedValidSet.bind(this);
+
 
 
     /*MP*/
@@ -258,10 +266,9 @@ class SetGame extends React.Component {
     return arr;
   }
 
-  findValidSetsOnTable(){
+  findValidSets(cards){
     /* go through all possible combinations of cards on the table looking for valid sets.*/
     
-    const cards = this.state.cards.slice();
     const validSets = [];
     for (let i1 = 0; i1 < cards.length; i1++){
       for (let i2 = i1 + 1; i2 < cards.length; i2++){
@@ -277,7 +284,7 @@ class SetGame extends React.Component {
   }
 
   countSets() {
-    return this.findValidSetsOnTable().length;
+    return this.findValidSets(this.state.cards).length;
   }
 
   generateHint(){
@@ -293,7 +300,7 @@ class SetGame extends React.Component {
     }
     else {
       if(this.state.hintLvl === 1){
-        const cardsToHint = this.fisherYatesShuffle(this.fisherYatesShuffle(this.findValidSetsOnTable())[0]);
+        const cardsToHint = this.fisherYatesShuffle(this.fisherYatesShuffle(this.findValidSets(this.state.cards))[0]);
         this.setState({
           cardsToHint,
           excludedFromScore: cardsToHint[0]
@@ -334,9 +341,65 @@ class SetGame extends React.Component {
       selectedCards
     }, () => {
         if (selectedCards.length === this.noP){
-              this.lastSelected();
+          if(!this.state.started){
+            this.lastSelected();
+          } else {
+            this.lastSelectedMultiplayer();
+          };
+              
         }
     });
+  }
+
+  lastSelectedMultiplayer() {
+    if (this.isValid(this.state.selectedCards)) {
+      this.selectSet();
+    } else {
+      this.failedSelect();
+      this.setState({
+        selectedCards: []
+      });
+    }
+  }
+
+  receivedValidSet(selectedSet) {
+    const author = selectedSet.author;
+    const set = selectedSet.set;
+    const cards = this.state.cards.slice();
+    let remainingCards = this.state.remainingCards.slice();
+    this.calculateElapsed(author);
+
+    if (remainingCards.length > 0) {
+      if (cards.length > 12) {
+        for (const card of set){
+          cards.splice(cards.indexOf(card), 1);
+        };
+      } 
+      else {
+        let i = 0;
+        for (const card of set) {
+          cards.splice(cards.indexOf(card), 1, remainingCards[i]);
+          i++;
+        };
+        remainingCards = remainingCards.slice(this.noP);
+      }
+    } 
+    else {
+      for (const card of this.state.selectedCards) {
+        cards.splice(cards.indexOf(card), 1);
+      };
+      //Implement endgame here
+    };
+
+    setTimeout(() => this.setState({
+      cards: cards,
+      remainingCards: remainingCards,
+      selectedCards: []
+    }, () => {
+      this.generateTitle();
+    }), 3000 * this.animationTimeFactor);
+    
+
   }
 
   lastSelected() {
@@ -367,7 +430,7 @@ class SetGame extends React.Component {
           do not deal 3 more and leave remainingCards be*/
           for (const card of this.state.selectedCards){
             cards.splice(cards.indexOf(card), 1);
-          }
+          };
         }
         else {
           /* Deal three new cards and delete them from remaining deck*/
@@ -375,7 +438,7 @@ class SetGame extends React.Component {
           for (const card of this.state.selectedCards){
             cards.splice(cards.indexOf(card), 1, remainingCards[i]);
             i++;
-          }
+          };
           remainingCards = remainingCards.slice(this.noP);
         }
 
@@ -395,7 +458,7 @@ class SetGame extends React.Component {
       else {
         for (const card of this.state.selectedCards) {
           cards.splice(cards.indexOf(card), 1);
-        }
+        };
         setTimeout(() => this.setState({
           cards: cards
           },() => {
@@ -431,11 +494,11 @@ class SetGame extends React.Component {
       const valSet = new Set();
       for (const card of set){
         valSet.add(card[i]);
-      }
+      };
       if(valSet.size !== 1 && valSet.size !== this.noP){
         return false;
       } 
-    }
+    };
     return true;
   }
 
@@ -486,43 +549,75 @@ class SetGame extends React.Component {
   checkIfSetOnTable() {
     const numberOfSets = this.countSets();
     if (numberOfSets > 0) {
-      const fails = this.state.fails;
-      fails.splice(-1, 1, fails[fails.length - 1] + 1);
-      this.setState({
-        fails: fails,
-        noSetFail: true
-      });
-      
+      if(!this.state.started){
+        const fails = this.state.fails;
+        fails.splice(-1, 1, fails[fails.length - 1] + 1);
+        this.setState({
+          fails: fails,
+          noSetFail: true
+        });
+      } 
+      else {
+        this.failedSelect();
+      }
     }
     else {
-      const cards = this.state.cards.slice();
-      const remainingCards = this.state.remainingCards;
-      cards.push(...remainingCards.slice(0, this.noP));
-      this.setState({
-        cards: cards,
-        remainingCards: remainingCards.slice(this.noP)
-      },() => { 
-        this.generateTitle();
-      });
-      
+      if (!this.state.started) {
+        const cards = this.state.cards.slice();
+        const remainingCards = this.state.remainingCards.slice();
+        cards.push(...remainingCards.slice(0, this.noP));
+        this.setState({
+          cards: cards,
+          remainingCards: remainingCards.slice(this.noP)
+        },() => { 
+          this.generateTitle();
+        });
+      } 
+      else {
+        this.noSet();
+      };
     }
   }
 
-  calculateElapsed () {
+  calculateElapsed (winner = null) {
     const stop = new Date();
-    const successTimes = this.state.successTimes.slice();
     const elapsed = (stop.getTime() - this.state.startTime.getTime())/1000;
-    if (successTimes.length > 0) {
-      /*compensate for animations delaying new deal */
-      successTimes.push(Math.round((elapsed - 3 * this.animationTimeFactor)* 10)/10);
-    } 
-    else {
-      successTimes.push(Math.round(elapsed * 10)/10)
+    if(!this.state.started){
+      const successTimes = this.state.successTimes.slice();
+      if (successTimes.length > 0) {
+        /*compensate for animations delaying new deal */
+        successTimes.push(Math.round((elapsed - 3 * this.animationTimeFactor)* 10)/10);
+      } 
+      else {
+        successTimes.push(Math.round(elapsed * 10)/10)
+      }
+      this.setState ({
+        successTimes: successTimes,
+        startTime: new Date()
+      });
     }
-    this.setState ({
-      successTimes: successTimes,
-      startTime: new Date()
-    });
+    else {
+      const players = this.state.players.slice();
+      for (const player of players) {
+        if(player.ID === winner) {
+          //simplify this shit
+          if(player.times === '-'){
+            const times = [elapsed];
+          } else {
+            const times = player.times;
+            times.push(elapsed);
+          };
+          
+          const currentScore = player.score;
+          player.score = currentScore + 3;
+
+          this.setState({
+            players
+          });
+        };
+      };
+    };
+    
   }
 
   /* functions responsible for generating and changing Title component */
@@ -627,7 +722,7 @@ class SetGame extends React.Component {
     const input = document.getElementById("messageText");
     
     try {
-      this.ws.send(JSON.stringify({"action" : "message", "message": `${input.value}`})); //send data to the server
+      this.ws.send(JSON.stringify({action: "message", message: `${input.value}`})); //send data to the server
       input.value = '';
     } 
     catch (error) {
@@ -636,9 +731,9 @@ class SetGame extends React.Component {
   }
 
   joinGame(gameId) {
-    console.log('here we go');
+    
     try {
-      this.ws.send(JSON.stringify({"action" : "joinGame", "gameId": gameId})); //send data to the server
+      this.ws.send(JSON.stringify({action : "joinGame", gameId: gameId})); //send data to the server
     } 
     catch (error) {
       console.log(error) // catch error
@@ -648,7 +743,7 @@ class SetGame extends React.Component {
   createGame() {
     
     try {
-      this.ws.send(JSON.stringify({"action" : "createGame"})); //send data to the server
+      this.ws.send(JSON.stringify({action: "createGame"})); //send data to the server
     } 
     catch (error) {
       console.log(error) // catch error
@@ -658,7 +753,35 @@ class SetGame extends React.Component {
   startGame() {
     try {
       const deck = this.fisherYatesShuffle(this.generateDeck());
-      this.ws.send(JSON.stringify({"action" : "startGame", "deck": deck})); //send data to the server
+      this.ws.send(JSON.stringify({action : "startGame", deck: deck})); //send data to the server
+    } 
+    catch (error) {
+      console.log(error) // catch error
+    }
+  }
+
+  failedSelect() {
+    //And failed noSet try
+    try {
+      this.ws.send(JSON.stringify({action: "failedSelect"})); //send data to the server
+    } 
+    catch (error) {
+      console.log(error) // catch error
+    }
+  }
+
+  selectSet() {
+    try {
+      this.ws.send(JSON.stringify({action: "selectSet", selected: this.state.selectedCards})); //send data to the server
+    } 
+    catch (error) {
+      console.log(error) // catch error
+    }
+  }
+  
+  noSet() {
+    try {
+      this.ws.send(JSON.stringify({action: "noSet"})); //send data to the server
     } 
     catch (error) {
       console.log(error) // catch error
@@ -683,6 +806,7 @@ class SetGame extends React.Component {
               games: data.lobbyInfo
             });
             break;
+
           case "ownID":
             this.setState({
               connectionID: data.ownID
@@ -715,6 +839,8 @@ class SetGame extends React.Component {
             this.setState({
               cards: data.startedGame.deck.slice(0, this.noP * 4),
               remainingCards: data.startedGame.deck.slice (this.noP * 4),
+              startTime: new Date(),
+              started: true
             });
             break;
             
@@ -748,8 +874,31 @@ class SetGame extends React.Component {
             this.setState({
               players
             });
-          
             break;
+          
+          case "selectedSet":
+            this.receivedValidSet(data.selectedSet);
+            break;
+          
+          case "noSet":
+            //Deal 3 new cards and allocate 3 points for the daredevil
+
+            for(const player of players){
+              if(player.ID === data.noSet) {
+                const currentScore = player.score;
+                player.score = currentScore + 3;
+              };
+            };
+            const cards = this.state.cards.slice();
+            const remainingCards = this.state.remainingCards.slice();
+            cards.push(...remainingCards.slice(0, this.noP));
+            this.setState({
+              cards: cards,
+              remainingCards: remainingCards.slice(this.noP),
+              players
+            },() => { 
+              this.generateTitle();
+            });
 
           default:
             console.log('ERR:Unrecognized message.')
@@ -763,7 +912,7 @@ class SetGame extends React.Component {
     }
 
     this.ws.onopen = () => {
-      this.ws.send(JSON.stringify({"action":"lobbyInfo"}));
+      this.ws.send(JSON.stringify({action:"lobbyInfo"}));
       console.log('connected')
     }
 
@@ -799,13 +948,15 @@ class SetGame extends React.Component {
         <div className={this.state.multiplayer ? 'button-wrapper' : 'hidden'}>
           
           <button className={!this.state.rules? 'toggle-rules button' : 'toggle-rules-selected button'} onClick={this.toggleRules}>{!this.state.rules? 'Show rules' : 'Hide rules'}</button>
+          <button className={!this.state.noSetHint? 'noSet button short': 'noSet-hint button short'} onClick={this.checkIfSetOnTable}>No set!</button>
+          <button className={!this.state.noSetHint? 'noSet button long': 'noSet-hint button long'} onClick={this.checkIfSetOnTable}>There is no SET!</button>
           <button className='reload button' onClick={this.toggleLobby}>{this.state.currentGame ? 'Game' : 'Lobby'}</button>
           <button className='startGame button' onClick={this.startGame}>Start game!</button>
 
         
         
         </div>
-        <Lobby lobby={this.state.lobby} sendMessage={this.sendMessage} createGame={this.createGame} joinGame={this.joinGame} messages={this.state.webSocketChat} games={this.state.games} currentGame={this.state.currentGame} playerNickname={this.state.playerNickname} players={this.state.players}/>
+        <Lobby lobby={this.state.lobby} sendMessage={this.sendMessage} createGame={this.createGame} joinGame={this.joinGame} messages={this.state.webSocketChat} games={this.state.games} currentGame={this.state.currentGame} playerNickname={this.state.playerNickname} players={this.state.players} nofRemainingCards={this.state.remainingCards.length}/>
         <Rules rules={this.state.rules}/>
         <Stats leaderboard={this.state.leaderboard} topScores={this.state.topScores} fastestGames={this.state.fastestGames} timeBasedLeaderboard={this.state.timeBasedLeaderboard} toggleLeaderboards={this.toggleLeaderboards} stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
         <div className='afterStats'>
