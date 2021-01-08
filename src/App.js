@@ -46,7 +46,9 @@ class Lobby extends React.Component {
     for (const player of this.props.players){
       scores.push(
         <tr key={player.ID}>
-          <th>{player.name}</th><th>{player.score}</th><th>{player.times}</th>
+          <th>{player.name}</th>
+          <th>{player.score}</th>
+          <th>{player.times.length > 0 ? player.times.reduce((x, y) => x + y)/player.times.length : '-'}</th>
         </tr>
       );
     };
@@ -152,6 +154,7 @@ class SetGame extends React.Component {
       games: [{"ID":"mockGame", "started": false}],
       currentGame: false,
       players: [],
+      winnerTime: 0
     };
     
     this.toggleRules = this.toggleRules.bind(this);
@@ -368,6 +371,7 @@ class SetGame extends React.Component {
     const cards = this.state.cards.slice();
     let remainingCards = this.state.remainingCards.slice();
     this.calculateElapsed(author);
+    this.showTime();
 
     if (remainingCards.length > 0) {
       if (cards.length > 12) {
@@ -582,7 +586,8 @@ class SetGame extends React.Component {
   calculateElapsed (winner = null) {
     const stop = new Date();
     const elapsed = (stop.getTime() - this.state.startTime.getTime())/1000;
-    if(!this.state.started){
+    if(!this.state.started) {
+      //Single-player
       const successTimes = this.state.successTimes.slice();
       if (successTimes.length > 0) {
         /*compensate for animations delaying new deal */
@@ -597,22 +602,23 @@ class SetGame extends React.Component {
       });
     }
     else {
+      //Multi-player
       const players = this.state.players.slice();
       for (const player of players) {
         if(player.ID === winner) {
-          //simplify this shit
-          if(player.times === '-'){
-            const times = [elapsed];
+          const times= player.times;
+          if(player.times.length === 0){
+            times.push(Math.round(elapsed * 10)/10);
           } else {
-            const times = player.times;
-            times.push(elapsed);
+            times.push(Math.round((elapsed - 3 * this.animationTimeFactor)* 10)/10);
           };
           
           const currentScore = player.score;
           player.score = currentScore + 3;
-
+          player.times = times;
           this.setState({
-            players
+            players,
+            winnerTime: {winner: winner === this.state.connectionID ? true: false, time: times[times.length-1]}
           });
         };
       };
@@ -854,6 +860,20 @@ class SetGame extends React.Component {
             }
             break;
 
+          case "playerDisconnected":
+            for(const player of players) {
+              if(player.ID === data.playerDisconnected) {
+                messages.push({author:"Gameroom", content:`Player ${player.name} lost connection.`})
+                players.splice(players.indexOf(player), 1);
+                this.setState({
+                  players,
+                  webSocketChat: messages
+                });
+                break;
+              };
+            };
+            break;
+
           case "message":
             messages.push(
               data.message
@@ -899,6 +919,7 @@ class SetGame extends React.Component {
             },() => { 
               this.generateTitle();
             });
+            break;
 
           default:
             console.log('ERR:Unrecognized message.')
@@ -966,7 +987,7 @@ class SetGame extends React.Component {
           Your game is now qualified for the leaderboard. <b>Keep going!</b> You can <span className='enter-button' onClick={() => this.setState({playerPrompt: true})}>enter</span> your name now or after finishing whole deck.
         </div>
         <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards} colours={this.colours} hintedCards={this.state.hintedCards} showTime={this.state.showTime} excludedFromScore={this.state.excludedFromScore}/>
-        <ShowTime show={this.state.showTime} time={this.state.successTimes[this.state.successTimes.length - 1]}/>
+        <ShowTime show={this.state.showTime} time={!this.state.started ? this.state.successTimes[this.state.successTimes.length - 1] : this.state.winnerTime.time} winner={!this.state.started ? true : this.state.winnerTime.winner}/>
         <Footer/>
         
         <div className='debugInfo'>
@@ -976,6 +997,7 @@ class SetGame extends React.Component {
           
          
           <button onClick={this.connect}>Connect</button>
+          <button onClick={() => this.ws.close()}>Disconnect</button>
          
         </div>
       </div>

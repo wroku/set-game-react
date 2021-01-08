@@ -294,6 +294,10 @@ footer {
   cursor: default;
 }
 
+.forLooser {
+  color: gray;
+}
+
 .show {
   animation-name: timeFlies;
   animation-duration: calc(3s * var(--animationTimeFactor));
