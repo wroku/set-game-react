@@ -10,6 +10,12 @@ import classNames from 'classnames';
 
 
 class Lobby extends React.Component {
+  
+  handleKeySend = e => {
+    if(e.key ==="Enter") {
+      this.props.sendMessage();
+    };
+  };
 
   render() {
     const className = classNames({
@@ -18,10 +24,26 @@ class Lobby extends React.Component {
     });
 
     const chatMessages = [];
-    for (let i=0; i < this.props.messages.length; i++){
+    for (let i=0; i < this.props.messages.length; i++) {
+
+      let playerColour;
+      if(this.props.messages[i].author!=='Gameroom'){
+        playerColour = this.props.players.filter(player => player.ID === this.props.messages[i].author)[0].colour;
+      }
+      else {
+        playerColour='grey';
+      };
+      console.log(playerColour);
+
+      const chatTextClassName = classNames({
+        'chat-text':true,
+        'own': this.props.messages[i].author === this.props.connectionID,
+        [`${playerColour}`]: true
+      });
+
       chatMessages.push(
-        <div key={i} className={this.props.messages[i].author === this.props.playerNickname? 'chat-message sended' : 'chat-message'}>
-            <div className={this.props.messages[i].author === this.props.playerNickname? 'chat-text own' : 'chat-text'}>
+        <div key={i} className={this.props.messages[i].author === this.props.connectionID? 'chat-message sended' : 'chat-message'}>
+            <div className={chatTextClassName}>
               {this.props.messages[i].content}
           </div>
         </div>
@@ -46,27 +68,30 @@ class Lobby extends React.Component {
     for (const player of this.props.players){
       scores.push(
         <tr key={player.ID}>
-          <th>{player.name}</th>
+          <th className={player.colour}>{player.name}</th>
           <th>{player.score}</th>
-          <th>{player.times.length > 0 ? player.times.reduce((x, y) => x + y)/player.times.length : '-'}</th>
+          <th>{player.times.length > 0 ? Math.round((player.times.reduce((x, y) => x + y)/player.times.length)*10)/10 : '-'}</th>
         </tr>
       );
     };
+
+    
     return (
       <div className={className}>
         <div className='row'>
           <div className={!this.props.currentGame ? 'games' : 'games hidden'}>
             <div className='gamesBox-title-wrapper'>
-              Games
+              Games 
             </div>
-            {lobbyGames}            
+            {lobbyGames}
+            Awaiting users: {this.props.nofWaitingUsers}           
             <button className='createGame' onClick={this.props.createGame}>Create game</button>
 
           </div>
 
           <div className={this.props.currentGame ? 'current-game': 'current-game hidden'}>
             <div className='gamesBox-title-wrapper'>
-              GameName game
+              GameName <button className={!this.props.started ? 'leaveGameBtn' : 'leaveGameBtn hidden'} onClick={this.props.leaveGame}>x</button>
             </div>
             <div className='game-info'>
               Remaining cards: {this.props.nofRemainingCards}
@@ -95,8 +120,8 @@ class Lobby extends React.Component {
             
             
             <div className='input-wrapper'>
-              <input type="text"  id="messageText" autoComplete="off"/>
-              <button className='send-button' onClick={this.props.sendMessage}>Send</button>
+              <input type="text"  id="messageText" autoComplete="off" onKeyPress={this.handleKeySend}/>
+              <button className='sendBtn' onClick={this.props.sendMessage}>Send</button>
             </div>
             
           </div>
@@ -118,6 +143,11 @@ class SetGame extends React.Component {
     this.colours = {'0': 'red',
                     '1': 'green',
                     '2': 'darkviolet'};
+    this.playersColours = {0: 'blue',
+                           1: 'orange',
+                           2: 'green',
+                           3: 'pink'}
+    
     const deck = this.fisherYatesShuffle(this.generateDeck());
 
     this.state = {
@@ -133,9 +163,9 @@ class SetGame extends React.Component {
       cards: deck.slice(0, this.noP * 4),
       remainingCards: deck.slice (this.noP * 4),
       noSetHint: false,
-      hintedCards:[],
-      cardsToHint:[],
-      excludedFromScore:[],
+      hintedCards: [],
+      cardsToHint: [],
+      excludedFromScore: [],
       hintLvl: 1,
       showTime: false,
       failedAttempt: false,
@@ -150,11 +180,13 @@ class SetGame extends React.Component {
       multiplayer: true,
       started: false,
       lobby: true,
-      webSocketChat:[],     
+      webSocketChat: [],     
       games: [{"ID":"mockGame", "started": false}],
       currentGame: false,
       players: [],
-      winnerTime: 0
+      waitingUsers: 0,
+      winnerTime: 0,
+      received: []
     };
     
     this.toggleRules = this.toggleRules.bind(this);
@@ -182,6 +214,7 @@ class SetGame extends React.Component {
     this.failedSelect = this.failedSelect.bind(this);
     this.selectSet = this.selectSet.bind(this);
     this.noSet = this.noSet.bind(this);
+    this.leaveGame = this.leaveGame.bind(this);
 
     this.lastSelectedMultiplayer = this.lastSelectedMultiplayer.bind(this);
     this.receivedValidSet = this.receivedValidSet.bind(this);
@@ -373,6 +406,12 @@ class SetGame extends React.Component {
     this.calculateElapsed(author);
     this.showTime();
 
+    if (author !== this.state.connectionID) {
+      this.setState({
+        received: set
+      });
+    };
+
     if (remainingCards.length > 0) {
       if (cards.length > 12) {
         for (const card of set){
@@ -398,7 +437,8 @@ class SetGame extends React.Component {
     setTimeout(() => this.setState({
       cards: cards,
       remainingCards: remainingCards,
-      selectedCards: []
+      selectedCards: [],
+      received: []
     }, () => {
       this.generateTitle();
     }), 3000 * this.animationTimeFactor);
@@ -793,6 +833,14 @@ class SetGame extends React.Component {
       console.log(error) // catch error
     }
   }
+  leaveGame() {
+    try {
+      this.ws.send(JSON.stringify({action: "leaveGame"})); //send data to the server
+    } 
+    catch (error) {
+      console.log(error) // catch error
+    }
+  }
 
   connect() {
     this.ws = new WebSocket(`wss://qhurwv53tk.execute-api.eu-central-1.amazonaws.com/dev?player=${this.state.playerNickname}`)
@@ -818,6 +866,19 @@ class SetGame extends React.Component {
               connectionID: data.ownID
             });
             break;
+          
+          case "waitingUsers":
+            this.setState({
+              waitingUsers: data.waitingUsers
+            });
+            break;
+
+          case "correctWaitingUsers":
+            const currentWaitingUsers = this.state.waitingUsers;
+            this.setState({
+              waitingUsers: currentWaitingUsers + data.correctWaitingUsers
+            });
+            break;
 
           case "lobbyUpdate":
             const games = this.state.games.slice();
@@ -828,16 +889,22 @@ class SetGame extends React.Component {
             break;
 
           case "createdGame":
+            const player = data.createdGame.players;
+            player.colour = this.playersColours[0];
+            console.log(player);
             this.setState({
               currentGame: data.createdGame.gameID,
-              players:[data.createdGame.players]
+              players:[player]
             });
             break;
           
           case "joinedGame":
+            const gamePlayers = data.joinedGame.players;
+            gamePlayers.map(player => player.colour = this.playersColours[gamePlayers.indexOf(player)]);
+            console.log(gamePlayers);
             this.setState({
               currentGame: data.joinedGame.gameId,
-              players: data.joinedGame.players
+              players: gamePlayers
             });
             break;
 
@@ -849,15 +916,32 @@ class SetGame extends React.Component {
               started: true
             });
             break;
-            
+
+          case "leftGame":
+          
+            this.setState({
+              currentGame: false,
+            });
+            this.ws.send(JSON.stringify({action:"lobbyInfo"}));
+            break;
+
+          case "playerLeft":
+            players = players.filter(player => player.ID !== data.playerLeft);
+            this.setState({
+              players
+            });
+            break;
+
           case "newPlayer":
-            
+            const newPlayer = data.newPlayer;
+            newPlayer.colour = this.playersColours[players.length];
             if (data.newPlayer.ID !== this.state.connectionID){
-              players.push(data.newPlayer);
+              players.push(newPlayer);
               this.setState({
                 players
               });
             }
+            console.log(players);
             break;
 
           case "playerDisconnected":
@@ -922,11 +1006,7 @@ class SetGame extends React.Component {
             break;
 
           default:
-            console.log('ERR:Unrecognized message.')
-            messages.push(<span>#ERR:Unrecognized message.#</span>);
-            this.setState({
-              webSocketChat: messages
-            });
+            console.log('ERR:Unrecognized message.');
         }
       }
       
@@ -934,11 +1014,17 @@ class SetGame extends React.Component {
 
     this.ws.onopen = () => {
       this.ws.send(JSON.stringify({action:"lobbyInfo"}));
-      console.log('connected')
+      console.log('connected');
     }
 
     this.ws.onclose = () => {
-      console.log('disconnected')
+      console.log('disconnected');
+      this.setState({
+        currentGame: false,
+        games:[{"ID":"mockGame", "started": false}],
+        connectionID: 0,
+        waitingUsers:0,
+      });
       // automatically try to reconnect on connection loss
     }
   }
@@ -977,7 +1063,7 @@ class SetGame extends React.Component {
         
         
         </div>
-        <Lobby lobby={this.state.lobby} sendMessage={this.sendMessage} createGame={this.createGame} joinGame={this.joinGame} messages={this.state.webSocketChat} games={this.state.games} currentGame={this.state.currentGame} playerNickname={this.state.playerNickname} players={this.state.players} nofRemainingCards={this.state.remainingCards.length}/>
+        <Lobby lobby={this.state.lobby} sendMessage={this.sendMessage} createGame={this.createGame} joinGame={this.joinGame} leaveGame={this.leaveGame} messages={this.state.webSocketChat} games={this.state.games} currentGame={this.state.currentGame} playerNickname={this.state.playerNickname} connectionID={this.state.connectionID} players={this.state.players} nofRemainingCards={this.state.remainingCards.length} nofWaitingUsers={this.state.waitingUsers} started={this.state.started} playersColours={this.playersColours}/>
         <Rules rules={this.state.rules}/>
         <Stats leaderboard={this.state.leaderboard} topScores={this.state.topScores} fastestGames={this.state.fastestGames} timeBasedLeaderboard={this.state.timeBasedLeaderboard} toggleLeaderboards={this.toggleLeaderboards} stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
         <div className='afterStats'>
@@ -986,7 +1072,7 @@ class SetGame extends React.Component {
         <div className={this.state.successTimes.length < 5 && this.state.successTimes.length > 2 && this.state.playerNickname === ''? 'encouraging-info' : 'hidden'}>
           Your game is now qualified for the leaderboard. <b>Keep going!</b> You can <span className='enter-button' onClick={() => this.setState({playerPrompt: true})}>enter</span> your name now or after finishing whole deck.
         </div>
-        <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards} colours={this.colours} hintedCards={this.state.hintedCards} showTime={this.state.showTime} excludedFromScore={this.state.excludedFromScore}/>
+        <Table selectCard={this.selectCard} selectedCards={this.state.selectedCards} cards={this.state.cards} colours={this.colours} hintedCards={this.state.hintedCards} showTime={this.state.showTime} excludedFromScore={this.state.excludedFromScore} received={this.state.received}/>
         <ShowTime show={this.state.showTime} time={!this.state.started ? this.state.successTimes[this.state.successTimes.length - 1] : this.state.winnerTime.time} winner={!this.state.started ? true : this.state.winnerTime.winner}/>
         <Footer/>
         
@@ -998,7 +1084,7 @@ class SetGame extends React.Component {
          
           <button onClick={this.connect}>Connect</button>
           <button onClick={() => this.ws.close()}>Disconnect</button>
-         
+          <br/>
         </div>
       </div>
     );

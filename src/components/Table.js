@@ -12,15 +12,17 @@ class Card extends React.Component {
       const isSelected = !(this.props.selectedCards.indexOf(this.props.ncss) === -1)
       const isHinted = !(this.props.hintedCards.indexOf(this.props.ncss) === -1)
       const isExcluded = !(this.props.excludedFromScore.indexOf(this.props.ncss) === -1)
+      const wasReceived = !(this.props.received.indexOf(this.props.ncss) === -1)
       const classNameCard = classNames({
         'card': true,
         'selected' : isSelected,
-        'hinted': isHinted
+        'hinted': isHinted,
+        'animate-card-multiplayer': wasReceived,
       });
   
       const classNameScore = classNames({
         'score-wrapper': true,
-        'animate': this.props.showTime && isSelected && !isExcluded
+        'animate': this.props.showTime && isSelected && !isExcluded,
       });
   
       const xLink = "#myShape" + shape;
@@ -101,7 +103,7 @@ function Table(props) {
 
     let onTable = [];
     for(const card of props.cards){
-        onTable.push(<Card key={card} ncss={card} selectCard={props.selectCard} selectedCards={props.selectedCards} colours={props.colours} hintedCards={props.hintedCards} showTime={props.showTime} excludedFromScore={props.excludedFromScore}/>)
+        onTable.push(<Card key={card} ncss={card} selectCard={props.selectCard} selectedCards={props.selectedCards} colours={props.colours} hintedCards={props.hintedCards} showTime={props.showTime} excludedFromScore={props.excludedFromScore} received={props.received} />)
     }
 
     return(
