@@ -8,23 +8,24 @@ class CustomAlert extends React.Component {
     render() {
         const alertWrapperClass = classNames({
             'alert-wrapper': true,
-            'hidden': !(this.props.success || this.props.failedAttempt || this.props.noSetFail || this.props.playerPrompt)
+            'hidden': !(this.props.success || this.props.failedAttempt || this.props.noSetFail || this.props.playerPrompt || this.props.gameNamePrompt)
         });
         const alertStatusClass = classNames({
             'alert-absolute': true,
             'failedAttempt': this.props.failedAttempt,
             'success': this.props.success,
             'noSetFail': this.props.noSetFail,
-            'nicknamePrompt': !this.props.success && this.props.playerPrompt
+            'nicknamePrompt': (!this.props.success && this.props.playerPrompt) || this.props.gameNamePrompt
         });
 
         let infoMain, infoAdd;
         let button = <button className="alert-btn" onClick={this.props.close}>OK</button>  
-        if (this.props.failedAttempt){
+        
+        if (this.props.failedAttempt) {
             infoMain = 'This is not a valid set.'
             infoAdd = this.props.setsOnTable !== 0 ? "Try again or use a hint if you are stuck." : "If you think that there is no set on the table, use red button to deal 3 more cards.";
         }
-        else if(this.props.noSetFail){
+        else if(this.props.noSetFail) {
             infoMain = this.props.setsOnTable === 1 ? 'There is exactly one valid set on the table.' : `There are ${this.props.setsOnTable} valid sets on table.`;
             infoAdd = `If you are not sure whether to use No Set button, take a good look on the current title. Letters forming proper 'set' indicate presence of valid set on he table.`
         }
@@ -32,11 +33,25 @@ class CustomAlert extends React.Component {
             /* Clicking OK button should also in this case update game record with new player name, because this prompt can be displayed after last selected set */
             infoMain = `Provide your nickname:`
             infoAdd = <form>
-                            <input className='name-input' type="text" maxlength="64" value={this.props.playerNickname} onChange={this.props.handlePlayerChange} />
-                        </form>
+                        <input className='name-input' type="text" maxLength="64" value={this.props.playerNickname} onChange={this.props.handlePlayerChange} />
+                      </form>
             button = <button className="alert-btn" onClick={() => {this.props.close(); this.props.updateGameRecord();}}>OK</button>  
         }
-        else if (this.props.success){
+        else if (this.props.gameNamePrompt) {
+          /* Clicking OK button should also in this case update game record with new player name, because this prompt can be displayed after last selected set */
+          infoMain = `Name your gameroom:`
+          infoAdd = <form>
+                      <input className='name-input' type="text" maxLength="64" value={this.props.newGameName} onChange={this.props.handleGameNameChange} />
+                    </form>
+          button = <button className="alert-btn" onClick={() => {this.props.close(); this.props.createGame()}}>CREATE</button>  
+        }
+        else if (this.props.success && this.props.started) {
+            //Multiplayer endgame
+            infoMain = `Congratulations!`
+            infoAdd = `And the winner is... ${this.props.winner.name}! You can see game stats above. Good job!`
+            button = <button className="alert-btn" onClick={this.props.returnToLobby}>PLAY AGAIN</button>
+        } 
+        else if (this.props.success) {
             infoMain = `Congratulations!`
             infoAdd = 'You can see your stats above. Good job!'
             button = <button className="alert-btn" onClick={this.props.reload}>PLAY AGAIN</button>
@@ -81,7 +96,7 @@ function Countdown(props) {
   
     return(
       <div className={props.value || props.value === 0 ? 'countdown' : 'countdown hidden'}>
-        <div className='countdown-text'>{props.value != 0 ? props.value : "START!"}</div>
+        <div className='countdown-text'>{props.value !== 0 ? props.value : "START!"}</div>
         <div className="alert-overlay"></div>
       </div>
      

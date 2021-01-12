@@ -479,7 +479,12 @@ footer {
 }
 .sended {
   margin-left:50px;
-  
+}
+.last {
+  margin-bottom: 15px;
+}
+.hateDot {
+  opacity:0;
 }
 .chat-text {
   padding: 5px;
@@ -496,12 +501,17 @@ footer {
   font-weight: bold;
 }
 .blue {
-  background-color: rgba(12, 7, 250, 0.15);
+  background-color: rgba(12, 7, 250, 0.18);
 }
 .orange {
-  background-color: rgba(250, 145, 7, 0.15);
+  background-color: rgba(250, 145, 7, 0.18);
 }
-
+.green {
+  background-color: rgba(7, 250, 100, 0.18);
+}
+.pink {
+  background-color: rgba(250, 7, 238, 0.18);
+}
 .input-wrapper {
   padding:4px;
   background-color: rgba(0, 0, 0, 0.05);
