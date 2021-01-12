@@ -77,5 +77,16 @@ function ShowTime(props) {
     );
 }
 
-export {CustomAlert, ShowTime};
+function Countdown(props) {
+  
+    return(
+      <div className={props.value || props.value === 0 ? 'countdown' : 'countdown hidden'}>
+        <div className='countdown-text'>{props.value != 0 ? props.value : "START!"}</div>
+        <div className="alert-overlay"></div>
+      </div>
+     
+    );
+}
+
+export {CustomAlert, ShowTime, Countdown};
   
