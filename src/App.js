@@ -72,6 +72,9 @@ class Lobby extends React.Component {
         </div>
       );
     };
+    if (lobbyGames.length === 0) {
+      lobbyGames.push(<div className='lobby-game'><span>No active games.</span></div>)
+    }
 
     const scores = [];
     
@@ -111,7 +114,17 @@ class Lobby extends React.Component {
 
           <div className={this.props.currentGame ? 'current-game': 'current-game hidden'}>
             <div className='gamesBox-title-wrapper'>
-              {gameName} <button className={!this.props.started ? 'leaveGameBtn' : 'leaveGameBtn hidden'} onClick={this.props.leaveGame}>x</button>
+              {gameName} 
+              <svg className={!this.props.started ? "close-icon" : 'close-icon hidden'} onClick={this.props.leaveGame} x="0px" y="0px" viewBox="0 0 26 26" >
+                <g>
+                  <path d="M21.125,0H4.875C2.182,0,0,2.182,0,4.875v16.25C0,23.818,2.182,26,4.875,26h16.25
+                    C23.818,26,26,23.818,26,21.125V4.875C26,2.182,23.818,0,21.125,0z M18.78,17.394l-1.388,1.387c-0.254,0.255-0.67,0.255-0.924,0
+                    L13,15.313L9.533,18.78c-0.255,0.255-0.67,0.255-0.925-0.002L7.22,17.394c-0.253-0.256-0.253-0.669,0-0.926l3.468-3.467
+                    L7.221,9.534c-0.254-0.256-0.254-0.672,0-0.925l1.388-1.388c0.255-0.257,0.671-0.257,0.925,0L13,10.689l3.468-3.468
+                    c0.255-0.257,0.671-0.257,0.924,0l1.388,1.386c0.254,0.255,0.254,0.671,0.001,0.927l-3.468,3.467l3.468,3.467
+                    C19.033,16.725,19.033,17.138,18.78,17.394z"/>
+                </g>
+              </svg>
             </div>
             <div className='game-info'>
               Remaining cards: {this.props.started ? this.props.nofRemainingCards : '-'}
@@ -196,13 +209,13 @@ class SetGame extends React.Component {
       timeBasedLeaderboard: false,
       gameId: 0,
       playerPrompt: false,
-      playerNickname: `Anonym${Math.floor(Math.random()*100)}`,
+      playerNickname: ``,
       connectionID: 0,
-      multiplayer: true,
+      multiplayer: false,
       started: false,
-      lobby: true,
+      lobby: false,
       webSocketChat: [],     
-      games: [{ID:'g3263456', gameName:"mockGame", started: false}],
+      games: [],
       currentGame: false,
       players: [],
       waitingUsers: 0,
@@ -613,9 +626,37 @@ class SetGame extends React.Component {
   }
 
   toggleMultiplayer() {
-    this.setState({
-      multiplayer: !this.state.multiplayer,
-    });
+    if(!this.state.multiplayer){
+      this.connect();
+      this.setState({
+        multiplayer: true,
+        lobby: true,
+        rules: false,
+        stats: false,
+        playerPrompt: this.state.playerNickname === '' ? true: false,
+      });
+    } 
+    else {
+      this.ws.close();
+      this.setState({
+        multiplayer: false,
+        lobby: false,
+        connectionID: 0,
+        started: false,
+        webSocketChat: [],     
+        games: [],
+        currentGame: false,
+        players: [],
+        waitingUsers: 0,
+        winnerTime: 0,
+        received: [],
+        countdown: false,
+        winner: '',
+        newGameName: '',
+        gameNamePrompt: false
+      });
+    }
+    
   }
 
   toggleLobby() {
@@ -960,7 +1001,7 @@ class SetGame extends React.Component {
               games,
               currentGame: data.createdGame.gameID,
               players:[player],
-              webSocketChat:[{author:'Gameroom', content: 'You have created x game. Wait for at least one player to start!'}],
+              webSocketChat:[{author:'Gameroom', content: `You have created ${this.state.newGameName} game. Wait for at least one player to start!`}],
             });
             break;
           
@@ -1011,7 +1052,6 @@ class SetGame extends React.Component {
             if (data.newPlayer.ID !== this.state.connectionID){
               players.push(newPlayer);
               players.map(player => player.colour = this.playersColours[players.indexOf(player)]);
-
               this.setState({
                 players
               });
@@ -1111,7 +1151,7 @@ class SetGame extends React.Component {
     
     return(
       <div>
-        <Title colours={this.colours} ncData={this.state.titleData}/>
+        <Title colours={this.colours} ncData={this.state.titleData} toggleMultiplayer={this.toggleMultiplayer} multiplayer={this.state.multiplayer} started={this.state.started}/>
 
         <div className={!this.state.multiplayer ? 'button-wrapper' : 'hidden'}>
           <button className={!this.state.rules? 'toggle-rules button' : 'toggle-rules-selected button'} onClick={this.toggleRules}>{!this.state.rules? 'Show rules' : 'Hide rules'}</button>
@@ -1133,9 +1173,8 @@ class SetGame extends React.Component {
         <div className={this.state.multiplayer ? 'button-wrapper' : 'hidden'}>
           
           <button className={!this.state.rules? 'toggle-rules button' : 'toggle-rules-selected button'} onClick={this.toggleRules}>{!this.state.rules? 'Show rules' : 'Hide rules'}</button>
-          <button className={!this.state.noSetHint? 'noSet button short': 'noSet-hint button short'} onClick={this.checkIfSetOnTable}>No set!</button>
-          <button className={!this.state.noSetHint? 'noSet button long': 'noSet-hint button long'} onClick={this.checkIfSetOnTable}>There is no SET!</button>
-          <button className='reload button' onClick={this.toggleLobby}>{this.state.currentGame ? 'Game' : 'Lobby'}</button>
+          <button className={!this.state.noSetHint ? 'noSet button': 'noSet-hint button'} onClick={this.checkIfSetOnTable}>There is no SET!</button>
+          <button className={!this.state.lobby ? 'lobby-or-game button' : 'lobby-or-game-selected button'} onClick={this.toggleLobby}>{this.state.currentGame ? 'Game' : 'Lobby'}</button>
           <button className='startGame button' disabled={this.state.started || this.state.players.length === 1 || !this.state.currentGame} onClick={this.startGame}>Start game!</button>
 
         
@@ -1158,8 +1197,6 @@ class SetGame extends React.Component {
         <div className='debugInfo'>
           <button className='delete-cards-btn' onClick={this.toggleMultiplayer}>Multiplayer</button>
           <br/>
-          
-          
          
           <button onClick={this.connect}>Connect</button>
           <button onClick={() => this.ws.close()}>Disconnect</button>
