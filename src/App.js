@@ -626,11 +626,11 @@ class SetGame extends React.Component {
   }
 
   toggleMultiplayer() {
-    if(this.state.playerNickname !== '') {
-      //Otherwise player prompt manages opening connection to avoid sending empty playerName
-      this.connect();
-    };
     if(!this.state.multiplayer){
+      if(this.state.playerNickname !== '') {
+        //Otherwise player prompt manages opening connection to avoid sending empty playerName
+        this.connect();
+      };
       this.setState({
         multiplayer: true,
         lobby: true,
