@@ -5,6 +5,21 @@ import classNames from 'classnames';
   
 class CustomAlert extends React.Component {
 
+    constructor(props) {
+      super(props);
+      this.afterEnteringName = this.afterEnteringName.bind(this);
+    }
+
+    afterEnteringName() {
+      if(!this.props.multiplayer) {
+        this.props.close();
+        this.props.updateGameRecord();
+      }
+      else {
+        this.props.connect();
+        this.props.close();
+      };
+    };
     render() {
         const alertWrapperClass = classNames({
             'alert-wrapper': true,
@@ -35,7 +50,7 @@ class CustomAlert extends React.Component {
             infoAdd = <form>
                         <input className='name-input' type="text" maxLength="64" value={this.props.playerNickname} onChange={this.props.handlePlayerChange} />
                       </form>
-            button = <button className="alert-btn" onClick={() => {this.props.close(); this.props.updateGameRecord();}}>OK</button>  
+            button = <button className="alert-btn" onClick={this.afterEnteringName}>OK</button>  
         }
         else if (this.props.gameNamePrompt) {
           /* Clicking OK button should also in this case update game record with new player name, because this prompt can be displayed after last selected set */

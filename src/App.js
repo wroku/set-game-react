@@ -626,8 +626,11 @@ class SetGame extends React.Component {
   }
 
   toggleMultiplayer() {
-    if(!this.state.multiplayer){
+    if(this.state.playerNickname !== '') {
+      //Otherwise player prompt manages opening connection to avoid sending empty playerName
       this.connect();
+    };
+    if(!this.state.multiplayer){
       this.setState({
         multiplayer: true,
         lobby: true,
@@ -1184,7 +1187,7 @@ class SetGame extends React.Component {
         <Rules rules={this.state.rules}/>
         <Stats leaderboard={this.state.leaderboard} topScores={this.state.topScores} fastestGames={this.state.fastestGames} timeBasedLeaderboard={this.state.timeBasedLeaderboard} toggleLeaderboards={this.toggleLeaderboards} stats={this.state.stats} remainingCards={this.state.remainingCards} successTimes={this.state.successTimes} fails={this.state.fails}/>
         <div className='afterStats'>
-        <CustomAlert playerPrompt={this.state.playerPrompt} playerNickname={this.state.playerNickname} handlePlayerChange={this.handlePlayerChange} success={this.state.finished} noSetFail={this.state.noSetFail} failedAttempt={this.state.failedAttempt} setsOnTable={this.countSets()} reload={this.reload} close={this.closeAlert} updateGameRecord={this.updateGameRecord} started={this.state.started} winner={this.state.winner} returnToLobby={this.returnToLobby} createGame={this.createGame} handleGameNameChange={this.handleGameNameChange} gameNamePrompt={this.state.gameNamePrompt} newGameName={this.state.newGameName}/>
+        <CustomAlert playerPrompt={this.state.playerPrompt} playerNickname={this.state.playerNickname} handlePlayerChange={this.handlePlayerChange} success={this.state.finished} noSetFail={this.state.noSetFail} failedAttempt={this.state.failedAttempt} setsOnTable={this.countSets()} reload={this.reload} close={this.closeAlert} updateGameRecord={this.updateGameRecord} started={this.state.started} winner={this.state.winner} returnToLobby={this.returnToLobby} createGame={this.createGame} handleGameNameChange={this.handleGameNameChange} gameNamePrompt={this.state.gameNamePrompt} newGameName={this.state.newGameName} multiplayer={this.state.multiplayer} connect={this.connect}/>
         </div>
         <div className={this.state.successTimes.length < 5 && this.state.successTimes.length > 2 && this.state.playerNickname === ''? 'encouraging-info' : 'hidden'}>
           Your game is now qualified for the leaderboard. <b>Keep going!</b> You can <span className='enter-button' onClick={() => this.setState({playerPrompt: true})}>enter</span> your name now or after finishing whole deck.
