@@ -2,8 +2,14 @@
   --animationTimeFactor: 1;
 }
 
+/*
+*{
+  outline: 1px solid red;
+}*/
+
+
 body {
-  width: 100%;
+  width: 99%;
   height:100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -11,11 +17,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: #F4F4F4;
-}
-
-.wrapper{
-  width: 100vw;
-  text-align:center;
 }
 
 code {
@@ -34,7 +35,7 @@ h1 {
 #root {
   width: 320px;
   height: 100%;
-  margin:30px auto;
+  margin:30px auto !important;
   text-align: center;
 }
 
@@ -256,8 +257,9 @@ footer {
 
 .score-wrapper {
   position:relative;
+  width: 30px;
   top:-50%;
-  left:40%;
+  left:39%;
   opacity: 0;
 }
 
@@ -285,8 +287,9 @@ footer {
 
 .time-wrapper {
   position:relative;
+  width:200px;
   top: 0;
-  left: 35%;
+  left: 37%;
   opacity: 0;
 }
 
@@ -618,6 +621,7 @@ footer {
 }
 
 .multiplayer-icon {
+  margin-right:4%;
   fill:dimgray;
 }
 
@@ -683,6 +687,7 @@ footer {
   }
 
   .score-wrapper {
+    width:30px;
     left:35%;
   }
 
@@ -806,7 +811,7 @@ footer {
   }
 
   .score-wrapper {
-    left:35%;
+    left:37%;
   }
 
   .scorePoint {

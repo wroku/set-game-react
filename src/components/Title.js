@@ -58,7 +58,7 @@ class Title extends React.Component {
           </g>
         </svg>
         
-        <svg className={this.props.multiplayer ? 'multiplayer-icon-active' : 'multiplayer-icon'} onClick={this.props.toggleMultiplayer} x="0px" y="0px" width='8%' height='40px'
+        <svg className={this.props.multiplayer ? 'multiplayer-icon-active' : 'multiplayer-icon'} onClick={this.props.toggleMultiplayer} x="0px" y="0px" width='6%' height='auto'
           viewBox="0 0 468.493 468.493" >
         <g>
           <path d="M138.321,161.831h-17.437v-17.437c0-3.615-2.287-6.835-5.701-8.026c-5.319-1.855-10.904-2.796-16.6-2.796
