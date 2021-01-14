@@ -150,7 +150,7 @@ th, td {
 }
 
 .title-wrapper {
-  margin-bottom:2rem;
+  margin-bottom:0.8rem;
 }
 
 
@@ -535,9 +535,8 @@ footer {
 .sendBtn {
   border-radius:3px;
   border-color:black;
-  top:85%;
   font-size: 0.8rem;
-  margin-left: 0.5rem;
+  margin-left: 0.3rem;
 }
 
 .startGame {
@@ -617,7 +616,7 @@ footer {
 }
 .lobby-games {
   height:130px;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .multiplayer-icon {
@@ -650,6 +649,10 @@ footer {
 
   footer {
     width:450px;
+  }
+
+  .title-wrapper {
+    margin-bottom:1rem;
   }
 
   .card {
@@ -781,6 +784,10 @@ footer {
 
   footer {
     width: 550px;
+  }
+
+  .title-wrapper {
+    margin-bottom:1.3rem;
   }
 
   .card {
@@ -933,6 +940,10 @@ footer {
 
   .time-wrapper {
     left: 36%;
+  }
+
+  .title-wrapper {
+    margin-bottom:2rem;
   }
 
   .lastTime {
