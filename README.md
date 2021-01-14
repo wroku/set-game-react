@@ -1,6 +1,7 @@
 # Set Game
 Single-player implementation of popular card game "SET", written with ES6, react.js and css3. 
-Multi-player version <a href='https://set-ready-go.herokuapp.com/'>Check it out!</a> (first load after a break can take a few seconds).
+<a href='https://set-ready-go.herokuapp.com/'>Check it out!</a> (first load after a break can take a few seconds due to free hosting).
+Multi-player version implemented with serverless, AWS API Gateway, AWS Lambda and DynamoDB (<a href='https://github.com/wroku/aws-serverless-ws'>Code</a>).
 
 <p align="center" width="100%">
   <img width="503" height="710" src="https://user-images.githubusercontent.com/65915712/102587096-967aad80-410b-11eb-87c9-f56070ff8a1b.gif">
@@ -13,7 +14,7 @@ Get familiar with the rules and start picking sets of 3 cards which in your opin
 Unjustified click on "No set" button also subtracts one point from your score, but colours and shadings of letters from title directly correspond to the presence of valid set on the table. Enjoy!
 
 ### Top Scores
-Application is connected with online leaderboard hosted on Deta micro via REST API( <a href='https://github.com/wroku/fastapi-for-set'>Code here.</a> ). After a third successful guess new record is created, then score is updated on every change. Player has the possibility to enter the nickname right now, or after finishing the whole deck. Leaderboard can also display best records with respect to average time.
+Application is connected with online leaderboard hosted on Deta micro via REST API( <a href='https://github.com/wroku/fastapi-for-set'>Code here</a>). After a third successful guess new record is created, then score is updated on every change. Player has the possibility to enter the nickname right now, or after finishing the whole deck. Leaderboard can also display best records with respect to average time.
 
 ### Multiplayer Mode
 Implemented with serverless, AWS API Gateway, AWS Lambda and DynamoDB (<a href='https://github.com/wroku/aws-serverless-ws'>Code</a>).
