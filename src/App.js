@@ -244,6 +244,8 @@ class SetGame extends React.Component {
     this.setState({
       fails
       });
+    // Test  
+    this.updateGameRecord();
   }
 
   selectCard(ncss) {
@@ -354,6 +356,7 @@ class SetGame extends React.Component {
         fails: fails,
         selectedCards: []
       });
+      this.updateGameRecord();
     }
   }
 
@@ -457,6 +460,8 @@ class SetGame extends React.Component {
           fails: fails,
           noSetFail: true
         });
+        // TEST
+        this.updateGameRecord();
       } 
       else {
         this.failedSelect();

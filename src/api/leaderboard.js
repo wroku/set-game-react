@@ -1,8 +1,17 @@
+import axios from 'axios';
+
+const instance = axios.create({
+  baseURL: '/leaderboard/',
+  headers: {
+    'Content-Type': 'application/json', 
+  },
+});
+
+
 const Leaderboard = {
 
     fetchLeaderboard() {
-        const axios = require('axios');  
-        axios.get('https://consp8.deta.dev/records/?top=3')
+        instance.get('/records/?top=3')
         .then((response) => {
             // handle success
             this.setState({
@@ -12,10 +21,12 @@ const Leaderboard = {
         .catch(function (error) {
             // handle error
             console.log(error);
+        })
+        .finally(function () {
         });
 
-        const axios2 = require('axios');  
-        axios2.get('https://consp8.deta.dev/records/?top=3&avg_time_based=true')
+
+        instance.get('/records/?top=3&avg_time_based=true')
         .then((response) => {
             // handle success
             this.setState({
@@ -30,12 +41,11 @@ const Leaderboard = {
     },
 
     addGameToLeaderboard() {
-        const axios = require('axios');
         
         const currentScore = this.state.successTimes.length * 3 - this.state.fails.reduce((x,y) => x + y);
         const totalTime = Math.round(this.state.successTimes.reduce((x,y) => x + y) * 10)/10;
         const nickname = !this.state.playerNickname ? 'Anonym' : this.state.playerNickname;
-        axios.post('https://consp8.deta.dev/records/',{
+        instance.post('/records/',{
           player: nickname,
           score: currentScore,
           time: totalTime
@@ -52,13 +62,17 @@ const Leaderboard = {
       },
     
     updateGameRecord() {
-        const axios = require('axios');
+        const currentId = this.state.gameId;
+        if (currentId === 0) {
+          console.log('Update called before creating record.')
+          return
+        }
         const currentScore = this.state.successTimes.length * 3 - this.state.fails.reduce((x,y) => x + y);
         const totalTime = Math.round(this.state.successTimes.reduce((x,y) => x + y) * 10)/10;
-        const currentId = this.state.gameId;
+
         const nickname = !this.state.playerNickname ? 'Anonym' : this.state.playerNickname;
     
-        axios.put(`https://consp8.deta.dev/records/${currentId}`,{
+        instance.put(`records/${currentId}`,{
           
           player: nickname,
           score: currentScore,
@@ -72,7 +86,5 @@ const Leaderboard = {
         });
     }
 }
-
-
 
 export {Leaderboard};
